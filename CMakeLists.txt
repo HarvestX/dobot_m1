@@ -15,7 +15,7 @@ include_directories(
 )
 
 link_directories(
-  ${PROJECR_ROOT}/src/DobotDll_x64
+  lib/DobotDll_x64
 )
 
 add_executable(
