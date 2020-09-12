@@ -7,11 +7,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
-GET_FILENAME_COMPONENT(PROJECT_ROOT . ABSOLUTE CACHE INTERNAL "Path prefix for the project")
-
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ${PROJECT_ROOT}/include/DobotDll
+  include/DobotDll
 )
 
 link_directories(
@@ -19,11 +17,11 @@ link_directories(
 )
 
 add_executable(
-  ${PROJECT_NAME} src/m1_controller.cpp
+  m1_controller src/m1_controller.cpp
 )
 
 target_link_libraries(
-  ${PROJECT_NAME}
+  m1_controller
   ${catkin_LIBRARIES}
   DobotDllM1
 )
