@@ -3,18 +3,17 @@
 
 void cpcmd(double x,double y,double z, double r)
 {
-  PTPCmd cmd;
+  CPCmd cmd;
   uint64_t lastIndex;
   bool ret;
 
-  cmd.ptpMode = 2; //movel:2 movej:1
+  cmd.cpMode = 1; //movel:2 movej:1
   cmd.x = x;
   cmd.y = y;
   cmd.z = z;
-  cmd.r = r;
 
   while (SetQueuedCmdClear() != DobotCommunicate_NoError) {}
-  while (SetPTPCmd(&cmd, true, &lastIndex) != DobotCommunicate_NoError) {}
+  while (SetCPCmd(&cmd, true, &lastIndex) != DobotCommunicate_NoError) {}
 
   uint64_t currentIndex;
   while(1)
@@ -27,6 +26,7 @@ void cpcmd(double x,double y,double z, double r)
 int main(int argc, char**argv)
 {
   uint64_t queuedCmdIndex;
+  uint64_t lastIndex;
 
   // Connect to Dobot
   // ####### need!!! ################
@@ -51,14 +51,18 @@ int main(int argc, char**argv)
          ROS_INFO("CMD Queue Started");
   }
 
-  for (int i =0 ; i < 3; i++){
-    cpcmd(350,0,220,0);
-    cpcmd(240,60,220,0);
-    cpcmd(240,-100,220,0);
-  }
+
+  SetHOMECmd();
+
   //Pose pose;
   //GetPose(&pose);
   //std::cout << "x:" << pose.x << " y:" << pose.y << " z:" << pose.z << std::endl;
+  uint64_t currentIndex;
+  while(1)
+  {
+    while(GetQueuedCmdCurrentIndex(&currentIndex) != DobotCommunicate_NoError) {}
+    if (lastIndex <= currentIndex)break;
+  }
 
   DisconnectDobot();
   return 0;
