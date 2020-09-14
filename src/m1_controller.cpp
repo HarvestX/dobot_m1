@@ -52,7 +52,7 @@ int main(int argc, char**argv)
   }
 
 
-  SetHOMECmd();
+  while (SetHOMEWithSwitch(0, true, nullptr) != DobotCommunicate_NoError) {}
 
   SetQueuedCmdStopExec();
 
