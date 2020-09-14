@@ -54,15 +54,7 @@ int main(int argc, char**argv)
 
   SetHOMECmd();
 
-  //Pose pose;
-  //GetPose(&pose);
-  //std::cout << "x:" << pose.x << " y:" << pose.y << " z:" << pose.z << std::endl;
-  uint64_t currentIndex;
-  while(1)
-  {
-    while(GetQueuedCmdCurrentIndex(&currentIndex) != DobotCommunicate_NoError) {}
-    if (lastIndex <= currentIndex)break;
-  }
+  SetQueuedCmdStopExec();
 
   DisconnectDobot();
   return 0;
