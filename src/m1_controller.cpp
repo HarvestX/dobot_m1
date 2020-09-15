@@ -1,5 +1,31 @@
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include "DobotDll.h"
+#include <m1_controller/M1Ptp.h>
+#include <string>
+
+
+class M1Controller{
+  public:
+    M1Controller() : nh_(), pnh_("~") {
+      pnh_.getParam("port", port_);
+      initDobot_();
+      sub_ = nh_.subscribe("ptp_command", 1, &M1Controller::ptpCallback, this);
+    }
+
+    void ptpCallback(const m1_controller::M1Ptp& msg){
+      ROS_INFO("hogehoge");
+    }
+
+  private:
+    ros::NodeHandle nh_;
+    ros::NodeHandle pnh_;
+    ros::Subscriber sub_;
+    std::string port_;
+
+    void initDobot_() {
+      return;
+    }
+};
 
 void cpcmd(double x,double y,double z, double r)
 {
@@ -23,7 +49,7 @@ void cpcmd(double x,double y,double z, double r)
   }
 }
 
-int main(int argc, char**argv)
+int tmp()
 {
   uint64_t queuedCmdIndex;
   uint64_t lastIndex;
@@ -52,10 +78,23 @@ int main(int argc, char**argv)
   }
 
 
-  while (SetHOMEWithSwitch(0, true, nullptr) != DobotCommunicate_NoError) {}
+  // while (SetHOMEWithSwitch(0, true, nullptr) != DobotCommunicate_NoError) {}
+  uint8_t i;
+  for(i=0; i < 1; i++){
+    cpcmd(400, 0, 200, 0);
+    cpcmd(250, 50, 200, 0);
+    cpcmd(250, -50, 200, 0);
+  }
 
-  SetQueuedCmdStopExec();
+  // SetQueuedCmdStopExec();
 
   DisconnectDobot();
+  return 0;
+}
+
+int main(int argc, char**argv) {
+  ros::init(argc, argv, "m1_controller");
+  M1Controller m1_controller;
+  ros::spin();
   return 0;
 }

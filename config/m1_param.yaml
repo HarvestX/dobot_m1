@@ -1,9 +1,5 @@
-# Dobot M1 Home Position
-x: 400.0
-y: 0.0
-z: 200.0
-r: 0.0
 # Dobot M1 arm orientation
-arm_orient: "RightyArmOrientation" # "LeftyArmOrientation"
+port: "/dev/ttyUSB0"
+arm_orient: "LeftyArmOrientation" # "RightyArmOrientation"
 vel: 50.0 # default velocity ratio of dobot M1
 acc: 50.0 # defaulr acceleration ratio of dobot M1
