@@ -10,6 +10,7 @@ public:
     initDobot_();
     sub_ = nh_.subscribe("ptp_command", 1, &M1Controller::ptpCallback, this);
   }
+  ~M1Controller() { check_connection_(DisconnectDobot()); }
 
   void ptpCallback(const m1_controller::M1Ptp &msg) { ROS_INFO("hogehoge"); }
 
@@ -19,7 +20,18 @@ private:
   ros::Subscriber sub_;
   std::string port_;
 
-  void initDobot_() { return; }
+  void initDobot_() {
+    if (check_connection_(ConnectDobot(port_.c_str(), 115200, 0, 0))) {
+      ROS_INFO("Opened Dobot Communication");
+    }
+    // set timeout
+    uint32_t timeout = 20;
+    check_communication_(SetCmdTimeout(timeout));
+    // clean queue
+    check_communication_(SetQueuedCmdClear());
+    check_communication_(SetQueuedCmdStartExec());
+    return;
+  }
 
   bool check_connection_(uint8_t status) {
     switch (status) {
@@ -33,6 +45,7 @@ private:
       ROS_ERROR("Dobot Connect Occupied");
       break;
     default:
+      ROS_ERROR("Unexpected Return");
       break;
     }
     return false;
