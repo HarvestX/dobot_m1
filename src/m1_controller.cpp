@@ -86,7 +86,7 @@ private:
     {
     }
     // set timeout
-    uint32_t timeout = 20;
+    uint32_t timeout = 50;
     while (!check_communication_(SetCmdTimeout(timeout), "Set Timeout"))
     {
     }
@@ -96,10 +96,12 @@ private:
     }
 
     while (!check_communication_(ClearAllAlarmsState(), "Clear All Alarm"))
+    {
+    }
 
-      while (!check_communication_(SetQueuedCmdStartExec(), "Start Queue"))
-      {
-      }
+    while (!check_communication_(SetQueuedCmdStartExec(), "Start Queue"))
+    {
+    }
     return;
   }
 
