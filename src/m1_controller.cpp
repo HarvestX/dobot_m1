@@ -49,6 +49,10 @@ public:
     {
     }
 
+    while (!check_communication_(SetArmOrientation(LeftyArmOrientation, true, nullptr), "Set Arm Orientation"))
+    {
+    }
+
     DisconnectDobot();
     return;
   }
