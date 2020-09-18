@@ -14,6 +14,7 @@ add_message_files(
   FILES
   M1Ptp.msg
   M1Cp.msg
+  M1Jog.msg
 )
 
 generate_messages(

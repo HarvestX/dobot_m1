@@ -1,5 +1,6 @@
 #include <m1_controller/M1Ptp.h>
 #include <m1_controller/M1Cp.h>
+#include <m1_controller/M1Jog.h>
 #include <ros/ros.h>
 #include <string>
 #include "DobotDll.h"
@@ -15,6 +16,7 @@ public:
     initDobot();
     ptp_sub_ = nh_.subscribe("ptp_cmd", 1, &M1Controller::ptpCallback, this);
     cp_sub_ = nh_.subscribe("cp_cmd", 1, &M1Controller::cpCallback, this);
+    jog_sub_ = nh_.subscribe("jog_cmd", 1, &M1Controller::jogCallback, this);
   }
 
   ~M1Controller()
@@ -156,11 +158,57 @@ public:
     DisconnectDobot();
   }
 
+  void jogCallback(const m1_controller::M1Jog &msg)
+  {
+    // set velocity
+    float vel;
+    if (msg.vel == 0.0)
+    {
+      vel = vel_default_;
+    }
+    else
+    {
+      vel = msg.vel;
+    }
+    vel = check_velocity_(vel);
+
+    // set acceleration
+    float acc;
+    if (msg.acc == 0.0)
+    {
+      acc = acc_default_;
+    }
+    else
+    {
+      acc = msg.acc;
+    }
+    acc = check_acceleration_(acc);
+
+    JOGCommonParams jogCommonParams;
+    jogCommonParams.velocityRatio = vel;
+    jogCommonParams.accelerationRatio = acc;
+
+    JOGCmd cmd;
+    cmd.isJoint = msg.isJoint;
+    cmd.cmd = msg.jogCmd;
+
+    // Start session with dobot
+    connectDobot();
+    while (!check_communication_(SetJOGCommonParams(&jogCommonParams, true, nullptr), "Set JOG Param"))
+    {
+    }
+    while (!check_communication_(SetJOGCmd(&cmd, false, nullptr), "Set JOG Cmd"))
+    {
+    }
+    DisconnectDobot();
+  }
+
 private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   ros::Subscriber ptp_sub_;
   ros::Subscriber cp_sub_;
+  ros::Subscriber jog_sub_;
   std::string port_;
   // TODO: check limit
   float vel_default_;
