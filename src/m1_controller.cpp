@@ -11,12 +11,46 @@ public:
     pnh_.getParam("port", port_);
     pnh_.getParam("vel", vel_default_);
     pnh_.getParam("acc", acc_default_);
-    initDobot_();
+    initDobot();
     sub_ = nh_.subscribe("ptp_command", 1, &M1Controller::ptpCallback, this);
   }
+
   ~M1Controller()
   {
     check_connection_(DisconnectDobot());
+  }
+
+  void connectDobot()
+  {
+    while (!check_connection_(ConnectDobot(port_.c_str(), 115200, 0, 0)))
+    {
+    }
+  }
+
+  void initDobot()
+  {
+    connectDobot();
+
+    // set timeout
+    uint32_t timeout = 50;
+    while (!check_communication_(SetCmdTimeout(timeout), "Set Timeout"))
+    {
+    }
+    // clean queue
+    while (!check_communication_(SetQueuedCmdClear(), "Queue Clear"))
+    {
+    }
+
+    while (!check_communication_(ClearAllAlarmsState(), "Clear All Alarm"))
+    {
+    }
+
+    while (!check_communication_(SetQueuedCmdStartExec(), "Start Queue"))
+    {
+    }
+
+    DisconnectDobot();
+    return;
   }
 
   void ptpCallback(const m1_controller::M1Ptp &msg)
@@ -24,7 +58,6 @@ public:
     uint64_t lastIndex;
     // set velocity
     float vel;
-    PTPCommonParams ptpCommonParams;
     if (msg.vel == 0.0)
     {
       vel = vel_default_;
@@ -47,6 +80,7 @@ public:
     }
     acc = check_acceleration_(acc);
 
+    PTPCommonParams ptpCommonParams;
     ptpCommonParams.velocityRatio = vel;
     ptpCommonParams.accelerationRatio = acc;
 
@@ -57,14 +91,15 @@ public:
     cmd.z = msg.z;
     cmd.r = msg.r;
 
-    /**
+    // Start session with dobot
+    connectDobot();
     while (!check_communication_(SetPTPCommonParams(&ptpCommonParams, true, nullptr), "Set PTP Param"))
     {
     }
-    **/
     while (!check_communication_(SetPTPCmd(&cmd, true, nullptr), "Set PTP Cmd"))
     {
     }
+    DisconnectDobot();
   }
 
 private:
@@ -80,47 +115,22 @@ private:
   float acc_min_ = 5.0;
   float acc_max_ = 100.0;
 
-  void initDobot_()
-  {
-    while (!check_connection_(ConnectDobot(port_.c_str(), 115200, 0, 0)))
-    {
-    }
-    // set timeout
-    uint32_t timeout = 50;
-    while (!check_communication_(SetCmdTimeout(timeout), "Set Timeout"))
-    {
-    }
-    // clean queue
-    while (!check_communication_(SetQueuedCmdClear(), "Queue Clear"))
-    {
-    }
-
-    while (!check_communication_(ClearAllAlarmsState(), "Clear All Alarm"))
-    {
-    }
-
-    while (!check_communication_(SetQueuedCmdStartExec(), "Start Queue"))
-    {
-    }
-    return;
-  }
-
   bool check_connection_(uint8_t status)
   {
     switch (status)
     {
-      case DobotConnect_NoError:
-        ROS_INFO("Dobot Connect No Error");
-        return true;
-      case DobotConnect_NotFound:
-        ROS_ERROR("Dobot Connect Not Found");
-        break;
-      case DobotConnect_Occupied:
-        ROS_ERROR("Dobot Connect Occupied");
-        break;
-      default:
-        ROS_ERROR("Unexpected Return");
-        break;
+    case DobotConnect_NoError:
+      ROS_INFO("Dobot Connect No Error");
+      return true;
+    case DobotConnect_NotFound:
+      ROS_ERROR("Dobot Connect Not Found");
+      break;
+    case DobotConnect_Occupied:
+      ROS_ERROR("Dobot Connect Occupied");
+      break;
+    default:
+      ROS_ERROR("Unexpected Return");
+      break;
     }
     return false;
   }
@@ -129,21 +139,21 @@ private:
   {
     switch (status)
     {
-      case DobotCommunicate_NoError:
-        ROS_INFO("Dobot Communication No Error: %s", process_name.c_str());
-        return true;
-      case DobotCommunicate_BufferFull:
-        ROS_ERROR("Dobot Communication Buffer Full: %s", process_name.c_str());
-        break;
-      case DobotCommunicate_Timeout:
-        ROS_ERROR("Dobot Communication Timeout: %s", process_name.c_str());
-        break;
-      case DobotCommunicate_InvalidParams:
-        ROS_ERROR("Dobot Communication Invalid Params: %s", process_name.c_str());
-        break;
-      default:
-        ROS_ERROR("Unexpected Return: %s", process_name.c_str());
-        break;
+    case DobotCommunicate_NoError:
+      ROS_INFO("Dobot Communication No Error: %s", process_name.c_str());
+      return true;
+    case DobotCommunicate_BufferFull:
+      ROS_ERROR("Dobot Communication Buffer Full: %s", process_name.c_str());
+      break;
+    case DobotCommunicate_Timeout:
+      ROS_ERROR("Dobot Communication Timeout: %s", process_name.c_str());
+      break;
+    case DobotCommunicate_InvalidParams:
+      ROS_ERROR("Dobot Communication Invalid Params: %s", process_name.c_str());
+      break;
+    default:
+      ROS_ERROR("Unexpected Return: %s", process_name.c_str());
+      break;
     }
     return false;
   }
