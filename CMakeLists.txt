@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   M1Ptp.msg
+  M1Cp.msg
 )
 
 generate_messages(

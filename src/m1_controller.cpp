@@ -1,4 +1,5 @@
 #include <m1_controller/M1Ptp.h>
+#include <m1_controller/M1Cp.h>
 #include <ros/ros.h>
 #include <string>
 #include "DobotDll.h"
@@ -12,7 +13,8 @@ public:
     pnh_.getParam("vel", vel_default_);
     pnh_.getParam("acc", acc_default_);
     initDobot();
-    sub_ = nh_.subscribe("ptp_command", 1, &M1Controller::ptpCallback, this);
+    ptp_sub_ = nh_.subscribe("ptp_cmd", 1, &M1Controller::ptpCallback, this);
+    cp_sub_ = nh_.subscribe("cp_cmd", 1, &M1Controller::cpCallback, this);
   }
 
   ~M1Controller()
@@ -106,10 +108,59 @@ public:
     DisconnectDobot();
   }
 
+  void cpCallback(const m1_controller::M1Cp &msg)
+  {
+    uint64_t lastIndex;
+    // set velocity
+    float vel;
+    if (msg.vel == 0.0)
+    {
+      vel = vel_default_;
+    }
+    else
+    {
+      vel = msg.vel;
+    }
+    vel = check_velocity_(vel);
+
+    // set acceleration
+    float acc;
+    if (msg.acc == 0.0)
+    {
+      acc = acc_default_;
+    }
+    else
+    {
+      acc = msg.acc;
+    }
+    acc = check_acceleration_(acc);
+
+    CPParams cpParams;
+    cpParams.juncitionVel = vel;
+    cpParams.planAcc = acc;
+
+    CPCmd cmd;
+    cmd.cpMode = msg.cpMode;
+    cmd.x = msg.x;
+    cmd.y = msg.y;
+    cmd.z = msg.z;
+
+    // Start session with dobot
+    connectDobot();
+    while (!check_communication_(SetCPParams(&cpParams, true, nullptr), "Set CP Param"))
+    {
+    }
+    while (!check_communication_(SetCPCmd(&cmd, true, nullptr), "Set CP Cmd"))
+    {
+    }
+    DisconnectDobot();
+  }
+
 private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  ros::Subscriber sub_;
+  ros::Subscriber ptp_sub_;
+  ros::Subscriber cp_sub_;
   std::string port_;
   // TODO: check limit
   float vel_default_;
