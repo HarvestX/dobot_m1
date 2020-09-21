@@ -1,15 +1,14 @@
-#include <m1_controller/M1Ptp.h>
+#include "DobotDll.h"
 #include <m1_controller/M1Cp.h>
 #include <m1_controller/M1Jog.h>
+#include <m1_controller/M1Ptp.h>
 #include <ros/ros.h>
+#include <sensor_msgs/JointState.h>
 #include <string>
-#include "DobotDll.h"
 
-class M1Controller
-{
+class M1Controller {
 public:
-  M1Controller() : nh_(), pnh_("~")
-  {
+  M1Controller() : nh_(), pnh_("~") {
     pnh_.getParam("port", port_);
     pnh_.getParam("vel", vel_default_);
     pnh_.getParam("acc", acc_default_);
@@ -19,71 +18,55 @@ public:
     jog_sub_ = nh_.subscribe("jog_cmd", 1, &M1Controller::jogCallback, this);
   }
 
-  ~M1Controller()
-  {
-    check_connection_(DisconnectDobot());
-  }
+  ~M1Controller() { check_connection_(DisconnectDobot()); }
 
-  void connectDobot()
-  {
-    while (!check_connection_(ConnectDobot(port_.c_str(), 115200, 0, 0)))
-    {
+  void connectDobot() {
+    while (!check_connection_(ConnectDobot(port_.c_str(), 115200, 0, 0))) {
     }
   }
 
-  void initDobot()
-  {
+  void initDobot() {
     connectDobot();
 
     // set timeout
     uint32_t timeout = 50;
-    while (!check_communication_(SetCmdTimeout(timeout), "Set Timeout"))
-    {
+    while (!check_communication_(SetCmdTimeout(timeout), "Set Timeout")) {
     }
     // clean queue
-    while (!check_communication_(SetQueuedCmdClear(), "Queue Clear"))
-    {
+    while (!check_communication_(SetQueuedCmdClear(), "Queue Clear")) {
     }
 
-    while (!check_communication_(ClearAllAlarmsState(), "Clear All Alarm"))
-    {
+    while (!check_communication_(ClearAllAlarmsState(), "Clear All Alarm")) {
     }
 
-    while (!check_communication_(SetQueuedCmdStartExec(), "Start Queue"))
-    {
+    while (!check_communication_(SetQueuedCmdStartExec(), "Start Queue")) {
     }
 
-    while (!check_communication_(SetArmOrientation(LeftyArmOrientation, true, nullptr), "Set Arm Orientation"))
-    {
+    while (!check_communication_(
+        SetArmOrientation(LeftyArmOrientation, true, nullptr),
+        "Set Arm Orientation")) {
     }
 
     DisconnectDobot();
     return;
   }
 
-  void ptpCallback(const m1_controller::M1Ptp &msg)
-  {
+  void ptpCallback(const m1_controller::M1Ptp &msg) {
     uint64_t lastIndex;
     // set velocity
     float vel;
-    if (msg.vel == 0.0)
-    {
+    if (msg.vel == 0.0) {
       vel = vel_default_;
-    }
-    else
-    {
+    } else {
       vel = msg.vel;
     }
     vel = check_velocity_(vel);
 
     // set acceleration
     float acc;
-    if (msg.acc == 0.0)
-    {
+    if (msg.acc == 0.0) {
       acc = acc_default_;
-    }
-    else
-    {
+    } else {
       acc = msg.acc;
     }
     acc = check_acceleration_(acc);
@@ -101,38 +84,31 @@ public:
 
     // Start session with dobot
     connectDobot();
-    while (!check_communication_(SetPTPCommonParams(&ptpCommonParams, true, nullptr), "Set PTP Param"))
-    {
+    while (!check_communication_(
+        SetPTPCommonParams(&ptpCommonParams, true, nullptr), "Set PTP Param")) {
     }
-    while (!check_communication_(SetPTPCmd(&cmd, true, nullptr), "Set PTP Cmd"))
-    {
+    while (
+        !check_communication_(SetPTPCmd(&cmd, true, nullptr), "Set PTP Cmd")) {
     }
     DisconnectDobot();
   }
 
-  void cpCallback(const m1_controller::M1Cp &msg)
-  {
+  void cpCallback(const m1_controller::M1Cp &msg) {
     uint64_t lastIndex;
     // set velocity
     float vel;
-    if (msg.vel == 0.0)
-    {
+    if (msg.vel == 0.0) {
       vel = vel_default_;
-    }
-    else
-    {
+    } else {
       vel = msg.vel;
     }
     vel = check_velocity_(vel);
 
     // set acceleration
     float acc;
-    if (msg.acc == 0.0)
-    {
+    if (msg.acc == 0.0) {
       acc = acc_default_;
-    }
-    else
-    {
+    } else {
       acc = msg.acc;
     }
     acc = check_acceleration_(acc);
@@ -149,37 +125,29 @@ public:
 
     // Start session with dobot
     connectDobot();
-    while (!check_communication_(SetCPParams(&cpParams, true, nullptr), "Set CP Param"))
-    {
+    while (!check_communication_(SetCPParams(&cpParams, true, nullptr),
+                                 "Set CP Param")) {
     }
-    while (!check_communication_(SetCPCmd(&cmd, true, nullptr), "Set CP Cmd"))
-    {
+    while (!check_communication_(SetCPCmd(&cmd, true, nullptr), "Set CP Cmd")) {
     }
     DisconnectDobot();
   }
 
-  void jogCallback(const m1_controller::M1Jog &msg)
-  {
+  void jogCallback(const m1_controller::M1Jog &msg) {
     // set velocity
     float vel;
-    if (msg.vel == 0.0)
-    {
+    if (msg.vel == 0.0) {
       vel = vel_default_;
-    }
-    else
-    {
+    } else {
       vel = msg.vel;
     }
     vel = check_velocity_(vel);
 
     // set acceleration
     float acc;
-    if (msg.acc == 0.0)
-    {
+    if (msg.acc == 0.0) {
       acc = acc_default_;
-    }
-    else
-    {
+    } else {
       acc = msg.acc;
     }
     acc = check_acceleration_(acc);
@@ -194,11 +162,11 @@ public:
 
     // Start session with dobot
     connectDobot();
-    while (!check_communication_(SetJOGCommonParams(&jogCommonParams, true, nullptr), "Set JOG Param"))
-    {
+    while (!check_communication_(
+        SetJOGCommonParams(&jogCommonParams, true, nullptr), "Set JOG Param")) {
     }
-    while (!check_communication_(SetJOGCmd(&cmd, false, nullptr), "Set JOG Cmd"))
-    {
+    while (
+        !check_communication_(SetJOGCmd(&cmd, false, nullptr), "Set JOG Cmd")) {
     }
     DisconnectDobot();
   }
@@ -218,10 +186,8 @@ private:
   float acc_min_ = 5.0;
   float acc_max_ = 100.0;
 
-  bool check_connection_(uint8_t status)
-  {
-    switch (status)
-    {
+  bool check_connection_(uint8_t status) {
+    switch (status) {
     case DobotConnect_NoError:
       ROS_INFO("Dobot Connect No Error");
       return true;
@@ -238,10 +204,8 @@ private:
     return false;
   }
 
-  bool check_communication_(uint8_t status, std::string process_name)
-  {
-    switch (status)
-    {
+  bool check_communication_(uint8_t status, std::string process_name) {
+    switch (status) {
     case DobotCommunicate_NoError:
       ROS_INFO("Dobot Communication No Error: %s", process_name.c_str());
       return true;
@@ -261,30 +225,22 @@ private:
     return false;
   }
 
-  float check_velocity_(float vel)
-  {
-    if (vel < vel_min_)
-    {
+  float check_velocity_(float vel) {
+    if (vel < vel_min_) {
       ROS_WARN("velocity modified to minimum value: %f", vel_min_);
       vel = vel_min_;
-    }
-    else if (vel > vel_max_)
-    {
+    } else if (vel > vel_max_) {
       ROS_WARN("velocity modified to maximum value: %f", vel_max_);
       vel = vel_max_;
     }
     return vel;
   }
 
-  float check_acceleration_(float acc)
-  {
-    if (acc < acc_min_)
-    {
+  float check_acceleration_(float acc) {
+    if (acc < acc_min_) {
       ROS_WARN("acceleration modified to minimum value: %f", acc_min_);
       acc = acc_min_;
-    }
-    else if (acc > acc_max_)
-    {
+    } else if (acc > acc_max_) {
       ROS_WARN("acceleration modified to maximum value: %f", acc_max_);
       acc = acc_max_;
     }
@@ -292,32 +248,27 @@ private:
   }
 };
 
-void cpcmd(double x, double y, double z, double r)
-{
+void cpcmd(double x, double y, double z, double r) {
   CPCmd cmd;
   uint64_t lastIndex;
   bool ret;
 
-  while (SetQueuedCmdClear() != DobotCommunicate_NoError)
-  {
+  while (SetQueuedCmdClear() != DobotCommunicate_NoError) {
   }
-  while (SetCPCmd(&cmd, true, &lastIndex) != DobotCommunicate_NoError)
-  {
+  while (SetCPCmd(&cmd, true, &lastIndex) != DobotCommunicate_NoError) {
   }
 
   uint64_t currentIndex;
-  while (1)
-  {
-    while (GetQueuedCmdCurrentIndex(&currentIndex) != DobotCommunicate_NoError)
-    {
+  while (1) {
+    while (GetQueuedCmdCurrentIndex(&currentIndex) !=
+           DobotCommunicate_NoError) {
     }
     if (lastIndex <= currentIndex)
       break;
   }
 }
 
-int tmp()
-{
+int tmp() {
   uint64_t queuedCmdIndex;
   uint64_t lastIndex;
 
@@ -325,12 +276,9 @@ int tmp()
   // ####### need!!! ################
   // sudo chmod a+rw /dev/ttyUSB0
   // ################################
-  if (ConnectDobot("/dev/ttyUSB0", 115200, 0, 0) == DobotCommunicate_NoError)
-  {
+  if (ConnectDobot("/dev/ttyUSB0", 115200, 0, 0) == DobotCommunicate_NoError) {
     ROS_INFO("Opened Dobot Communication");
-  }
-  else
-  {
+  } else {
     ROS_ERROR("Invalid port name or Dobot is occupied by other application or "
               "something else :)");
   }
@@ -340,20 +288,17 @@ int tmp()
 
   // Set some Parameter and Initialisation
   // First clear the command queue
-  if (SetQueuedCmdClear() == DobotCommunicate_NoError)
-  {
+  if (SetQueuedCmdClear() == DobotCommunicate_NoError) {
     ROS_INFO("CMD Queue Cleared");
   }
   // and start the exec queue
-  if (SetQueuedCmdStartExec() == DobotCommunicate_NoError)
-  {
+  if (SetQueuedCmdStartExec() == DobotCommunicate_NoError) {
     ROS_INFO("CMD Queue Started");
   }
 
   // while (SetHOMEWithSwitch(0, true, nullptr) != DobotCommunicate_NoError) {}
   uint8_t i;
-  for (i = 0; i < 1; i++)
-  {
+  for (i = 0; i < 1; i++) {
     cpcmd(400, 0, 200, 0);
     cpcmd(250, 50, 200, 0);
     cpcmd(250, -50, 200, 0);
@@ -365,8 +310,7 @@ int tmp()
   return 0;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   ros::init(argc, argv, "m1_controller");
   M1Controller m1_controller;
   ros::spin();
