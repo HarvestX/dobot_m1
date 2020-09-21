@@ -13,12 +13,15 @@ public:
     pnh_.getParam("vel", vel_default_);
     pnh_.getParam("acc", acc_default_);
     initDobot();
+    joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 10);
+    timer_ =
+        nh_.createTimer(ros::Duration(0.1), &M1Controller::timerCallback, this);
     ptp_sub_ = nh_.subscribe("ptp_cmd", 1, &M1Controller::ptpCallback, this);
     cp_sub_ = nh_.subscribe("cp_cmd", 1, &M1Controller::cpCallback, this);
     jog_sub_ = nh_.subscribe("jog_cmd", 1, &M1Controller::jogCallback, this);
   }
 
-  ~M1Controller() { check_connection_(DisconnectDobot()); }
+  ~M1Controller() { DisconnectDobot(); }
 
   void connectDobot() {
     while (!check_connection_(ConnectDobot(port_.c_str(), 115200, 0, 0))) {
@@ -49,6 +52,27 @@ public:
 
     DisconnectDobot();
     return;
+  }
+
+  void timerCallback(const ros::TimerEvent &) {
+    Pose pose;
+    if (GetPose(&pose) != DobotCommunicate_NoError) {
+      return;
+    };
+
+    sensor_msgs::JointState joint_msg;
+    joint_msg.header.stamp = ros::Time::now();
+    joint_msg.name.resize(4);
+    joint_msg.position.resize(4);
+    joint_msg.name[0] = "joint1";
+    joint_msg.position[0] = (float)pose.jointAngle[0];
+    joint_msg.name[1] = "joint2";
+    joint_msg.position[1] = (float)pose.jointAngle[1];
+    joint_msg.name[2] = "joint3";
+    joint_msg.position[2] = (float)pose.jointAngle[2];
+    joint_msg.name[3] = "joint4";
+    joint_msg.position[3] = (float)pose.jointAngle[3];
+    joint_pub_.publish(joint_msg);
   }
 
   void ptpCallback(const m1_controller::M1Ptp &msg) {
@@ -174,9 +198,12 @@ public:
 private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
+  ros::Publisher joint_pub_;
   ros::Subscriber ptp_sub_;
   ros::Subscriber cp_sub_;
   ros::Subscriber jog_sub_;
+  ros::Timer timer_;
+
   std::string port_;
   // TODO: check limit
   float vel_default_;
