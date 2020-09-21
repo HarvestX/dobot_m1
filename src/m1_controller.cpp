@@ -15,7 +15,7 @@ public:
     initDobot();
     joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 10);
     timer_ =
-        nh_.createTimer(ros::Duration(0.1), &M1Controller::timerCallback, this);
+        nh_.createTimer(ros::Duration(1), &M1Controller::timerCallback, this);
     ptp_sub_ = nh_.subscribe("ptp_cmd", 1, &M1Controller::ptpCallback, this);
     cp_sub_ = nh_.subscribe("cp_cmd", 1, &M1Controller::cpCallback, this);
     jog_sub_ = nh_.subscribe("jog_cmd", 1, &M1Controller::jogCallback, this);
@@ -49,8 +49,6 @@ public:
         SetArmOrientation(LeftyArmOrientation, true, nullptr),
         "Set Arm Orientation")) {
     }
-
-    DisconnectDobot();
     return;
   }
 
@@ -107,14 +105,12 @@ public:
     cmd.r = msg.r;
 
     // Start session with dobot
-    connectDobot();
     while (!check_communication_(
         SetPTPCommonParams(&ptpCommonParams, true, nullptr), "Set PTP Param")) {
     }
     while (
         !check_communication_(SetPTPCmd(&cmd, true, nullptr), "Set PTP Cmd")) {
     }
-    DisconnectDobot();
   }
 
   void cpCallback(const m1_controller::M1Cp &msg) {
@@ -154,7 +150,6 @@ public:
     }
     while (!check_communication_(SetCPCmd(&cmd, true, nullptr), "Set CP Cmd")) {
     }
-    DisconnectDobot();
   }
 
   void jogCallback(const m1_controller::M1Jog &msg) {
@@ -185,14 +180,12 @@ public:
     cmd.cmd = msg.jogCmd;
 
     // Start session with dobot
-    connectDobot();
     while (!check_communication_(
         SetJOGCommonParams(&jogCommonParams, true, nullptr), "Set JOG Param")) {
     }
     while (
         !check_communication_(SetJOGCmd(&cmd, false, nullptr), "Set JOG Cmd")) {
     }
-    DisconnectDobot();
   }
 
 private:
