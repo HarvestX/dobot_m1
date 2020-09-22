@@ -1,3 +1,4 @@
+#include "m1_controller.h"
 #include "DobotDll.h"
 #include <m1_controller/M1Cp.h>
 #include <m1_controller/M1Jog.h>
@@ -5,6 +6,10 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <string>
+
+// remove us
+#include <bitset>
+#include <iostream>
 
 class M1Controller {
 public:
@@ -45,14 +50,24 @@ public:
     while (!check_communication_(SetQueuedCmdStartExec(), "Start Queue")) {
     }
 
+    // FIXME: LeftyArmOrientation is not working
     while (!check_communication_(
-        SetArmOrientation(LeftyArmOrientation, true, nullptr),
+        SetArmOrientation(RightyArmOrientation, true, nullptr),
         "Set Arm Orientation")) {
     }
     return;
   }
 
   void timerCallback(const ros::TimerEvent &) {
+    // Check Alarm
+    alarmState alarmstate;
+    uint32_t len, maxLen = 32;
+    if (GetAlarmsState(alarmstate.value, &len, maxLen) ==
+        DobotConnect_NoError) {
+      uint32_t code = alarmStateToCode(alarmstate);
+      publishAlarm(code);
+    }
+    // Publish Position
     Pose pose;
     if (GetPose(&pose) != DobotCommunicate_NoError) {
       return;
@@ -144,7 +159,6 @@ public:
     cmd.z = msg.z;
 
     // Start session with dobot
-    connectDobot();
     while (!check_communication_(SetCPParams(&cpParams, true, nullptr),
                                  "Set CP Param")) {
     }
@@ -265,6 +279,31 @@ private:
       acc = acc_max_;
     }
     return acc;
+  }
+
+  uint32_t alarmStateToCode(alarmState alarmstate) {
+    int len = sizeof(alarmstate); // 32
+    uint32_t code = 0;
+    for (int i = 0; i < len; i++) {
+      uint8_t val = alarmstate.value[i];
+      if (val == 0) {
+        code += 8;
+        continue;
+      }
+      uint8_t tmp = 0;
+      while (val >>= 1) {
+        ++tmp;
+      }
+      return code + tmp + 1;
+    }
+    return 0;
+  }
+
+  void publishAlarm(uint32_t code) {
+    if (code == 0)
+      return;
+    // TODO: convert code to human readable
+    ROS_ERROR("%d", code);
   }
 };
 

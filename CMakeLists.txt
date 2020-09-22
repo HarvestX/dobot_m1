@@ -29,6 +29,7 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  include/M1Controller
   include/DobotDll
 )
 
