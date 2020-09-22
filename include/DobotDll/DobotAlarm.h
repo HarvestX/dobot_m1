@@ -1,5 +1,4 @@
-#ifndef DOBOTALARM_H
-#define DOBOTALARM_H
+#pragma once
 
 #ifdef _MSC_VER
 typedef unsigned char uint8_t;
@@ -13,16 +12,6 @@ typedef signed long long int64_t;
 #else
 #include <stdint.h>
 #endif
-
-/*********************************************************************************************************
-** Data structures
-*********************************************************************************************************/
-
-/*********************************************************************************************************
-** Common parts
-*********************************************************************************************************/
-#pragma pack(push)
-#pragma pack(1)
 
 struct alarmState {
   uint8_t value[32];
@@ -62,7 +51,6 @@ enum AlarmCode {
   ERR_OVERSPEED_AXIS2,
   ERR_OVERSPEED_AXIS3,
   ERR_OVERSPEED_AXIS4,
-
   ERR_OVERSPEED_MAX = 0x3f,
 
   // Limit error
@@ -180,6 +168,4 @@ enum AlarmCode {
   ERR_MOTOR_ENDIO_RS485_WRONG,
   ERR_MOTOR_ENDIO_CAN_BROKE,
   ERR_MOTOR_ENDIO_MAX = 0xBf,
-}
-// MTest
-#endif // DOBOTDLL_H
+};
