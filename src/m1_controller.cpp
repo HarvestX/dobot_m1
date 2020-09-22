@@ -1,4 +1,3 @@
-#include "m1_controller.h"
 #include "DobotDll.h"
 #include <m1_controller/M1Cp.h>
 #include <m1_controller/M1Jog.h>

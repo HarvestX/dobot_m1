@@ -3,6 +3,7 @@
 
 #include "dobotdll_global.h"
 #include "DobotType.h"
+#include "DobotAlarm.h"
 
 extern "C" DOBOTDLLSHARED_EXPORT int DobotExec(void);
 
