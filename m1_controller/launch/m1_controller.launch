@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="dobby" pkg="m1_controller" type="m1_controller" output="screen">
+    <rosparam command="load" file="$(find m1_controller)/config/m1_param.yaml"/>
+  </node>
+
+</launch>

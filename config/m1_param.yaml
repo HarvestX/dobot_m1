@@ -1,6 +1,0 @@
-# Dobot M1 arm orientation
-port: "/dev/ttyUSB0"
-
-# Dobot Default PTP CP JOG Param
-vel: 50.0 # default velocity ratio of dobot M1
-acc: 50.0 # defaulr acceleration ratio of dobot M1
