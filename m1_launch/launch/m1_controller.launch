@@ -2,7 +2,7 @@
 <launch>
 
   <node name="dobby" pkg="m1_controller" type="m1_controller" output="screen">
-    <rosparam command="load" file="$(find m1_controller)/config/m1_param.yaml"/>
+    <rosparam command="load" file="$(find m1_launch)/config/m1_param.yaml"/>
   </node>
 
 </launch>
