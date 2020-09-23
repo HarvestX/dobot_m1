@@ -301,8 +301,8 @@ private:
   void publishAlarm(uint32_t code) {
     if (code == 0)
       return;
-    // TODO: convert code to human readable
-    ROS_ERROR("%d", code);
+    const char *s = getAlartCodeName(AlarmCode(code));
+    ROS_ERROR("%s", s);
   }
 };
 
