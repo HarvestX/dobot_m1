@@ -58,14 +58,8 @@ public:
   }
 
   void timerCallback(const ros::TimerEvent &) {
-    // Check Alarm
-    alarmState alarmstate;
-    uint32_t len, maxLen = 32;
-    if (GetAlarmsState(alarmstate.value, &len, maxLen) ==
-        DobotConnect_NoError) {
-      uint32_t code = alarmStateToCode(alarmstate);
-      publishAlarm(code);
-    }
+    checkAlarm_();
+
     // Publish Position
     Pose pose;
     if (GetPose(&pose) != DobotCommunicate_NoError) {
@@ -125,6 +119,7 @@ public:
     while (
         !check_communication_(SetPTPCmd(&cmd, true, nullptr), "Set PTP Cmd")) {
     }
+    checkAlarm_();
   }
 
   void cpCallback(const m1_controller::M1Cp &msg) {
@@ -163,6 +158,7 @@ public:
     }
     while (!check_communication_(SetCPCmd(&cmd, true, nullptr), "Set CP Cmd")) {
     }
+    checkAlarm_();
   }
 
   void jogCallback(const m1_controller::M1Jog &msg) {
@@ -199,6 +195,7 @@ public:
     while (
         !check_communication_(SetJOGCmd(&cmd, false, nullptr), "Set JOG Cmd")) {
     }
+    checkAlarm_();
   }
 
 private:
@@ -280,25 +277,20 @@ private:
     return acc;
   }
 
-  uint32_t alarmStateToCode(alarmState alarmstate) {
-    int len = sizeof(alarmstate); // 32
-    uint32_t code = 0;
-    for (int i = 0; i < len; i++) {
-      uint8_t val = alarmstate.value[i];
-      if (val == 0) {
-        code += 8;
-        continue;
-      }
-      uint8_t tmp = 0;
-      while (val >>= 1) {
-        ++tmp;
-      }
-      return code + tmp + 1;
+  void checkAlarm_() {
+    // Check Alarm
+    alarmState alarmstate;
+    uint32_t len, maxLen = 32;
+
+    if (GetAlarmsState(alarmstate.value, &len, maxLen) ==
+        DobotConnect_NoError) {
+      publishAlarm_(alarmstate);
+      ClearAllAlarmsState();
     }
-    return 0;
   }
 
-  void publishAlarm(uint32_t code) {
+  void publishAlarm_(alarmState alarmstate) {
+    uint32_t code = alarmStateToCode(alarmstate);
     if (code == 0)
       return;
     const char *s = getAlartCodeName(AlarmCode(code));

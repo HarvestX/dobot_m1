@@ -314,3 +314,21 @@ const char *getAlartCodeName(const AlarmCode value) {
 
   return s;
 }
+
+uint32_t alarmStateToCode(alarmState alarmstate) {
+  int len = sizeof(alarmstate); // 32
+  uint32_t code = 0;
+  for (int i = 0; i < len; i++) {
+    uint8_t val = alarmstate.value[i];
+    if (val == 0) {
+      code += 8;
+      continue;
+    }
+    uint8_t tmp = 0;
+    while (val >>= 1) {
+      ++tmp;
+    }
+    return code + tmp + 1;
+  }
+  return 0;
+}
