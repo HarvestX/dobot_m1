@@ -10,6 +10,7 @@
   <group if="$(arg joy)">
     <node name="joy_node" pkg="joy" type="joy_node">
       <param name="autorepeat_rate" value="10.0"/>
+      <param name="dev" value="/dev/input/js0"/>
     </node>
     <node name="joy_commander" pkg="m1_joy" type="joy_commander"/>
   </group>

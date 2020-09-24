@@ -215,7 +215,6 @@ private:
   bool check_connection_(uint8_t status) {
     switch (status) {
     case DobotConnect_NoError:
-      ROS_INFO("Dobot Connect No Error");
       return true;
     case DobotConnect_NotFound:
       ROS_ERROR("Dobot Connect Not Found");
@@ -233,7 +232,7 @@ private:
   bool check_communication_(uint8_t status, std::string process_name) {
     switch (status) {
     case DobotCommunicate_NoError:
-      ROS_INFO("Dobot Communication No Error: %s", process_name.c_str());
+      ROS_INFO("%s", process_name.c_str());
       return true;
     case DobotCommunicate_BufferFull:
       ROS_ERROR("Dobot Communication Buffer Full: %s", process_name.c_str());
@@ -281,6 +280,7 @@ private:
     if (GetAlarmsState(alarmstate.value, &len, maxLen) ==
         DobotConnect_NoError) {
       publishAlarm_(alarmstate);
+      SetQueuedCmdClear();
       ClearAllAlarmsState();
     }
   }

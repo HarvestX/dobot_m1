@@ -13,11 +13,11 @@ public:
   void joyCallback(const sensor_msgs::Joy &joy_msg) {
 
     m1_msgs::M1Jog jog_msg;
-    jog_msg.isJoint = 1;
+    jog_msg.isJoint = 0;
     jog_msg.jogCmd = 0;
 
-    float x = joy_msg.axes[0]; // L stick horizontal
-    float y = joy_msg.axes[1]; // L stick vertical
+    float x = joy_msg.axes[1]; // L stick horizontal
+    float y = joy_msg.axes[0]; // L stick vertical
     float z = joy_msg.axes[4]; // R stick vertical
 
     float x_abs = abs(x);
@@ -46,7 +46,7 @@ public:
         }
       }
       jog_msg.vel = vel * 100.0;
-      jog_msg.acc = 50.0;
+      jog_msg.acc = 100.0;
     }
     jog_pub_.publish(jog_msg);
   }
