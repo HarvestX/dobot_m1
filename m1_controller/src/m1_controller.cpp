@@ -6,10 +6,6 @@
 #include <sensor_msgs/JointState.h>
 #include <string>
 
-// remove us
-#include <bitset>
-#include <iostream>
-
 class M1Controller {
 public:
   M1Controller() : nh_(), pnh_("~") {
