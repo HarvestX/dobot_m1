@@ -1,8 +1,17 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="joy" default="false"/>
+  <arg name="output" default="log"/>
 
-  <node name="dobby" pkg="m1_controller" type="m1_controller" output="screen">
+  <node name="dobby" pkg="m1_controller" type="m1_controller" output="$(arg output)">
     <rosparam command="load" file="$(find m1_launch)/config/m1_param.yaml"/>
   </node>
+
+  <group if="$(arg joy)">
+    <node name="joy_node" pkg="joy" type="joy_node">
+      <param name="autorepeat_rate" value="10.0"/>
+    </node>
+    <node name="joy_commander" pkg="m1_joy" type="joy_commander"/>
+  </group>
 
 </launch>
