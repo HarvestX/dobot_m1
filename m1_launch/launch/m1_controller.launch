@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="joy" default="false"/>
+  <arg name="isJoint" default="true"/>
   <arg name="output" default="log"/>
 
   <node name="dobby" pkg="m1_controller" type="m1_controller" output="$(arg output)">
@@ -12,7 +13,9 @@
       <param name="autorepeat_rate" value="10.0"/>
       <param name="dev" value="/dev/input/js0"/>
     </node>
-    <node name="joy_commander" pkg="m1_joy" type="joy_commander"/>
+    <node name="joy_commander" pkg="m1_joy" type="joy_commander">
+      <param name="autorepeat_rate" value="${arg isJoint}"/>
+    </node>
   </group>
 
 </launch>
