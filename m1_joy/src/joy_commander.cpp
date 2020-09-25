@@ -39,6 +39,8 @@ public:
           jog_msg.jogCmd = 4; // Y-
         }
       } else if (z_abs >= vel) {
+        // Move Joint directly to avoid axis limitation
+        jog_msg.isJoint = 1;
         if (z > 0) {
           jog_msg.jogCmd = 5; // Z+
         } else {
@@ -60,6 +62,9 @@ private:
 int main(int argc, char **argv) {
   ros::init(argc, argv, "joy_commander");
   JoyCommander joy_commander;
-  ros::spin();
+  ros::Rate loop_rate(10);
+  while (ros::ok()) {
+    ros::spinOnce();
+  }
   return 0;
 }
