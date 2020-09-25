@@ -28,7 +28,7 @@ public:
     float r_abs = abs(r);
 
     float vel = std::max({x_abs, y_abs, z_abs, r_abs});
-    if (vel > 0.2) {
+    if (vel > 0.4) {
       if (x_abs >= vel) {
         if (x > 0) {
           jog_msg.jogCmd = 1; // X+
@@ -59,7 +59,7 @@ public:
           jog_msg.jogCmd = 8; // R-
         }
       }
-      jog_msg.vel = vel * 100.0;
+      jog_msg.vel = round(vel * 100.0);
       jog_msg.acc = 100.0;
     }
     jog_pub_.publish(jog_msg);
@@ -76,7 +76,7 @@ private:
 int main(int argc, char **argv) {
   ros::init(argc, argv, "joy_commander");
   JoyCommander joy_commander;
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(60);
   while (ros::ok()) {
     ros::spinOnce();
   }
