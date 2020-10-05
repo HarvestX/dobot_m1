@@ -15,5 +15,6 @@ private:
   ros::Publisher jog_pub_;
   ros::Subscriber joy_sub_;
   bool isJoint_ = true;
+  m1_msgs::M1Jog current_jog_msg_;
 };
 } // namespace dobot_m1
