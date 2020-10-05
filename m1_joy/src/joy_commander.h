@@ -8,6 +8,15 @@ class JoyCommander {
 public:
   JoyCommander();
   void joyCallback(const sensor_msgs::Joy &joy_msg);
+  void toggleJoyMode() {
+    isJoint_ = !isJoint_;
+    if (isJoint_) {
+      ROS_WARN("Jog in Joint coordinate system");
+    } else {
+      ROS_WARN("Jog in Cartesian coordinate system");
+    }
+    return;
+  }
 
 private:
   ros::NodeHandle nh_;

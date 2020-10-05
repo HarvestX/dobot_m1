@@ -16,13 +16,17 @@ JoyCommander::JoyCommander() : nh_(), pnh_() {
 void JoyCommander::joyCallback(const sensor_msgs::Joy &joy_msg) {
 
   m1_msgs::M1Jog target_jog_msg;
-  target_jog_msg.isJoint = isJoint_;
   target_jog_msg.jogCmd = 0;
 
-  float x = joy_msg.axes[1]; // L stick horizontal
-  float y = joy_msg.axes[0]; // L stick vertical
-  float z = joy_msg.axes[4]; // R stick vertical
-  float r = joy_msg.axes[3]; // R stick horizontal
+  float x = joy_msg.axes[1];          // L stick horizontal
+  float y = joy_msg.axes[0];          // L stick vertical
+  float z = joy_msg.axes[4];          // R stick vertical
+  float r = joy_msg.axes[3];          // R stick horizontal
+  int R1_buttom = joy_msg.buttons[4]; // R1 button
+
+  if (R1_buttom) {
+    toggleJoyMode();
+  }
 
   float x_abs = abs(x);
   float y_abs = abs(y);
@@ -30,7 +34,7 @@ void JoyCommander::joyCallback(const sensor_msgs::Joy &joy_msg) {
   float r_abs = abs(r);
 
   float vel = std::max({x_abs, y_abs, z_abs, r_abs});
-  if (vel > 0.4) {
+  if (vel > 0.4) { // ignore small input
     if (x_abs >= vel) {
       if (x > 0) {
         target_jog_msg.jogCmd = 1; // X+
@@ -64,13 +68,17 @@ void JoyCommander::joyCallback(const sensor_msgs::Joy &joy_msg) {
     target_jog_msg.vel = round(vel * 100.0);
     target_jog_msg.acc = 100.0;
   }
+
+  // to nothing
   if (target_jog_msg == current_jog_msg_) {
     return;
   }
+
+  // publish command
+  target_jog_msg.isJoint = isJoint_;
   current_jog_msg_ = target_jog_msg;
   jog_pub_.publish(target_jog_msg);
 }
-
 } // namespace dobot_m1
 
 int main(int argc, char **argv) {
