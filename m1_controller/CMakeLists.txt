@@ -24,12 +24,26 @@ link_directories(
   lib/DobotDll_x64
 )
 
+
+# m1_controller
 add_executable(
   m1_controller src/m1_controller.cpp
 )
 
 target_link_libraries(
   m1_controller
+  ${catkin_LIBRARIES}
+  DobotDllM1
+)
+
+
+# m1_homing
+add_executable(
+  m1_homing src/m1_homing.cpp
+)
+
+target_link_libraries(
+  m1_homing
   ${catkin_LIBRARIES}
   DobotDllM1
 )
