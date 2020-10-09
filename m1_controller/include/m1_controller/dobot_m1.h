@@ -1,3 +1,7 @@
+
+#ifndef ROS_CONTROL__DOBOT_M1_H
+#define ROS_CONTROL__DOBOT_M1_H
+
 #include <m1_msgs/M1Cp.h>
 #include <m1_msgs/M1Jog.h>
 #include <m1_msgs/M1Ptp.h>
@@ -10,10 +14,10 @@ namespace dobot_api {
 }
 
 namespace dobot_m1 {
-class M1Controller {
+class DobotM1 {
 public:
-  M1Controller();
-  ~M1Controller();
+  DobotM1();
+  ~DobotM1();
 
   void connectDobot();
   void initDobot();
@@ -21,6 +25,7 @@ public:
   void ptpCallback(const m1_msgs::M1Ptp &msg);
   void cpCallback(const m1_msgs::M1Cp &msg);
   void jogCallback(const m1_msgs::M1Jog &msg);
+  void homing();
 
 private:
   ros::NodeHandle nh_;
@@ -31,7 +36,7 @@ private:
   ros::Subscriber jog_sub_;
   ros::Timer timer_;
 
-  std::string port_;
+  std::string port_="/dev/ttyUSB0";
 
   float vel_default_;
   const float vel_min_ = 5.0;
@@ -48,3 +53,5 @@ private:
   void publishAlarm_(dobot_api::alarmState alarmstate);
 };
 } // namespace dobot_m1
+
+#endif

@@ -18,12 +18,23 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include/DobotDll
+  include/m1_controller
 )
 
 link_directories(
   lib/DobotDll_x64
 )
 
+# Dobot M1
+add_library(
+  dobot_m1 src/dobot_m1.cpp
+)
+
+target_link_libraries(
+  dobot_m1
+  ${catkin_LIBRARIES}
+  DobotDllM1
+)
 
 # m1_controller
 add_executable(
@@ -33,7 +44,7 @@ add_executable(
 target_link_libraries(
   m1_controller
   ${catkin_LIBRARIES}
-  DobotDllM1
+  dobot_m1
 )
 
 
@@ -45,5 +56,5 @@ add_executable(
 target_link_libraries(
   m1_homing
   ${catkin_LIBRARIES}
-  DobotDllM1
+  dobot_m1
 )
