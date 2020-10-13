@@ -41,10 +41,9 @@ void DobotM1::initDobot() {
                                "Start Queue")) {
   }
 
-  // FIXME: LeftyArmOrientation is not working
   while (
       !check_communication_(dobot_api::SetArmOrientation(
-                                dobot_api::RightyArmOrientation, true, nullptr),
+                                dobot_api::LeftyArmOrientation, true, nullptr),
                             "Set Arm Orientation")) {
   }
   return;
@@ -146,6 +145,12 @@ void DobotM1::cpCallback(const m1_msgs::M1Cp &msg) {
   cmd.z = msg.z;
 
   // Start session with dobot
+  // Cp command only works on RightyArmOrientation
+  while (
+      !check_communication_(dobot_api::SetArmOrientation(
+                                dobot_api::RightyArmOrientation, true, nullptr),
+                            "Set Arm Orientation")) {
+  }
   while (!check_communication_(SetCPParams(&cpParams, true, nullptr),
                                "Set CP Param")) {
   }
