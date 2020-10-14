@@ -41,11 +41,6 @@ void DobotM1::initDobot() {
                                "Start Queue")) {
   }
 
-  while (
-      !check_communication_(dobot_api::SetArmOrientation(
-                                dobot_api::LeftyArmOrientation, true, nullptr),
-                            "Set Arm Orientation")) {
-  }
   return;
 }
 
