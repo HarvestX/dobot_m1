@@ -105,6 +105,11 @@ void DobotM1::ptpCallback(const m1_msgs::M1Ptp &msg) {
   cmd.r = msg.r;
 
   // Start session with dobot
+  while (
+      !check_communication_(dobot_api::SetArmOrientation(
+                                dobot_api::LeftyArmOrientation, true, nullptr),
+                            "Set Arm Orientation")) {
+  }
   while (!check_communication_(
       SetPTPCommonParams(&ptpCommonParams, true, nullptr), "Set PTP Param")) {
   }
