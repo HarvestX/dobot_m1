@@ -1,4 +1,4 @@
-#include "dobot_m1.h"
+#include <dobot_m1.hpp>
 
 namespace dobot_m1 {
 DobotM1::DobotM1() : nh_(), pnh_("~") {
