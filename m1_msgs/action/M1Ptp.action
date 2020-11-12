@@ -1,0 +1,13 @@
+# Check if objects in image
+
+# Goal definition
+int16 id
+m1_msgs/M1Ptp m1_ptp
+
+---
+# Result definition
+int16 id
+std_msgs/Bool status
+
+---
+# Feedback definition
