@@ -1,7 +1,10 @@
 #include <dobot_m1.hpp>
 
 namespace dobot_m1 {
-DobotM1::DobotM1() : nh_(), pnh_("~") {
+DobotM1::DobotM1()
+    : ptp_as_(nh_, "m1_ptp_action",
+              boost::bind(&DobotM1::actionPtpCallback, this, _1), false),
+      nh_(), pnh_("~") {
   pnh_.getParam("port", port_);
   pnh_.getParam("vel", vel_default_);
   pnh_.getParam("acc", acc_default_);
@@ -11,6 +14,7 @@ DobotM1::DobotM1() : nh_(), pnh_("~") {
   ptp_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::ptpCallback, this);
   cp_sub_ = nh_.subscribe("cp_cmd", 1, &DobotM1::cpCallback, this);
   jog_sub_ = nh_.subscribe("jog_cmd", 1, &DobotM1::jogCallback, this);
+  ptp_as_.start();
 }
 
 DobotM1::~DobotM1() { dobot_api::DisconnectDobot(); }
@@ -196,6 +200,38 @@ void DobotM1::jogCallback(const m1_msgs::M1Jog &msg) {
   checkAlarm_();
 }
 
+void DobotM1::actionPtpCallback(const m1_msgs::M1PtpGoalConstPtr &goal) {
+  m1_msgs::M1PtpResult result;
+  result.id = goal->id;
+
+  dobot_api::PTPCommonParams ptpCommonParams;
+  ptpCommonParams.velocityRatio = goal->m1_ptp.vel;
+  ptpCommonParams.accelerationRatio = goal->m1_ptp.acc;
+
+  dobot_api::PTPCmd cmd;
+  cmd.ptpMode = goal->m1_ptp.ptpMode;
+  cmd.x = goal->m1_ptp.x;
+  cmd.y = goal->m1_ptp.y;
+  cmd.z = goal->m1_ptp.z;
+
+  // Start session with dobot
+  while (
+      !check_communication_(dobot_api::SetArmOrientation(
+                                dobot_api::LeftyArmOrientation, true, nullptr),
+                            "Set Arm Orientation")) {
+  }
+  while (!check_communication_(
+      SetPTPCommonParams(&ptpCommonParams, true, nullptr), "Set PTP Param")) {
+  }
+  while (!check_communication_(dobot_api::SetPTPCmd(&cmd, true, nullptr),
+                               "Set PTP Cmd")) {
+  }
+
+  result.status.data = DobotM1::assertAlarm_();
+  DobotM1::ptp_as_.setSucceeded(result);
+  return;
+}
+
 void DobotM1::homing() {
   // clean queue
   while (!check_communication_(dobot_api::SetQueuedCmdClear(), "Queue Clear")) {
@@ -294,6 +330,20 @@ void DobotM1::checkAlarm_() {
     dobot_api::SetQueuedCmdClear();
     dobot_api::ClearAllAlarmsState();
   }
+}
+
+bool DobotM1::assertAlarm_() {
+  dobot_api::alarmState alarmstate;
+  uint32_t len, maxLen = 32;
+  bool state = false;
+  if (dobot_api::GetAlarmsState(alarmstate.value, &len, maxLen) ==
+      dobot_api::DobotConnect_NoError) {
+    u_int32_t code = alarmStateToCode(alarmstate);
+
+    if (code == 0)
+      state = true;
+  }
+  return state;
 }
 
 void DobotM1::publishAlarm_(dobot_api::alarmState alarmstate) {

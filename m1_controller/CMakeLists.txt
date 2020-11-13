@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   m1_msgs
+  actionlib_msgs
+  actionlib
 )
 
 catkin_package(
