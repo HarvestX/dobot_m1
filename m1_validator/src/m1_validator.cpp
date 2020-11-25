@@ -3,9 +3,11 @@
 namespace dobot_m1 {
 
 M1Validator::M1Validator()
-    : ptp_as_(nh_, "m1_ptp_action",
+    : ptp_as_(nh_, "m1_ptp_validation",
               boost::bind(&M1Validator::actionPtpCallback, this, _1), false),
-      nh_(), pnh_("~") {}
+      nh_(), pnh_("~") {
+  ptp_as_.start();
+}
 
 M1Validator::~M1Validator() {}
 

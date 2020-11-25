@@ -29,3 +29,10 @@ target_link_libraries(
   m1_validator
   ${catkin_LIBRARIES}
 )
+
+# for test
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  catkin_add_gtest(utest_node test/utest_launch.test src/test/utest.cpp)
+  target_link_libraries(utest_node ${catkin_LIBRARIES})
+endif()
