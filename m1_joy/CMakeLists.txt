@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.13)
 project(m1_joy)
 
 add_compile_options(-std=c++11)
@@ -14,7 +14,13 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_package(
-  CATKIN_DEPENDS joy m1_controller roscpp rospy std_msgs
+  CATKIN_DEPENDS
+  joy
+  m1_controller
+  roscpp
+  rospy
+  std_msgs
+  m1_msgs
 )
 
 include_directories(
@@ -22,10 +28,17 @@ include_directories(
 )
 
 add_executable(
-  joy_commander src/joy_commander.cpp
+  m1_joy_commander
+  src/joy_commander.cpp
+)
+
+add_dependencies(
+  m1_joy_commander
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
 )
 
 target_link_libraries(
-  joy_commander
+  m1_joy_commander
   ${catkin_LIBRARIES}
 )

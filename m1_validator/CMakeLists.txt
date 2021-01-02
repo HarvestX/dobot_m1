@@ -25,6 +25,12 @@ add_executable(
   m1_validator src/m1_validator.cpp
 )
 
+add_dependencies(
+  m1_validator
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
 target_link_libraries(
   m1_validator
   ${catkin_LIBRARIES}

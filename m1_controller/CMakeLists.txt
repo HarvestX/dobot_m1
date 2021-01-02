@@ -32,6 +32,12 @@ add_library(
   dobot_m1 src/dobot_m1.cpp
 )
 
+add_dependencies(
+  dobot_m1
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
 target_link_libraries(
   dobot_m1
   ${catkin_LIBRARIES}
