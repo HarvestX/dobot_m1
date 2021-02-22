@@ -40,7 +40,8 @@ private:
   ros::Timer timer_;
   actionlib::SimpleActionServer<m1_msgs::M1PtpAction> ptp_as_;
 
-  std::string port_ = "/dev/ttyUSB0";
+  // std::string port_ = "/dev/ttyUSB0";
+  std::string port_ = "192.168.100.159";
 
   float vel_default_;
   const float vel_min_ = 5.0;

@@ -20,8 +20,9 @@ DobotM1::DobotM1()
 DobotM1::~DobotM1() { dobot_api::DisconnectDobot(); }
 
 void DobotM1::connectDobot() {
+  ROS_INFO("connecting to [%s]", DobotM1::port_.c_str());
   while (!check_connection_(
-      dobot_api::ConnectDobot(port_.c_str(), 115200, 0, 0))) {
+      dobot_api::ConnectDobot(port_.c_str(), 115200, nullptr, nullptr))) {
   }
 }
 
