@@ -1,0 +1,9 @@
+{
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-iot.vscode-ros"
+  },
+  "python.autoComplete.extraPaths": [
+    "/home/hx-desktop/catkin_ws/devel/lib/python3/dist-packages",
+    "/opt/ros/noetic/lib/python3/dist-packages"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/opt/ros/noetic/include/**",
+        "${HOME}/catkin_ws/devel/include/**",
+        "${HOME}/catkin_ws/src/hx2/hx2_detection/include/**",
+        "${HOME}/catkin_ws/src/hx2/hx2_node/include/**",
+        "${HOME}/catkin_ws/src/dobot_m1/m1_controller/include/**",
+        "${HOME}/catkin_ws/src/dobot_m1/m1_validator/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}
