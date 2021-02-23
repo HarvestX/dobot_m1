@@ -19,25 +19,18 @@ namespace dobot_m1
 
   DobotM1::~DobotM1() { dobot_api::DisconnectDobot(); }
 
-  void DobotM1::ConnectDobot()
-  {
-    ROS_INFO("connecting to [%s]", DobotM1::port_.c_str());
-    while (!CheckConnection_(
-        dobot_api::ConnectDobot(port_.c_str(), 115200, nullptr, nullptr)))
-    {
-    }
-  }
-
   void DobotM1::InitDobot()
   {
+    dobot_m1_interface::ConnectDobot(DobotM1::port_,  115200);
     ConnectDobot();
 
     // set timeout
+
+    // set timeout
     uint32_t timeout = 50;
-    while (
-        !CheckCommunication_(dobot_api::SetCmdTimeout(timeout), "Set Timeout"))
-    {
-    }
+    dobot_m1_interface::SetCmdTimeout(timeout);
+    dobot_m1_interface::SetQueuedCmdClear();
+
     // clean queue
     while (!CheckCommunication_(dobot_api::SetQueuedCmdClear(), "Queue Clear"))
     {

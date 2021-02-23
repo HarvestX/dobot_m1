@@ -27,6 +27,7 @@ target_sources(m1_controller
     src/m1_controller.cpp
     src/dobot_m1.cpp
     src/dobot_m1_alarm.cpp
+    src/dobot_m1_interface.cpp
 )
 
 target_include_directories(m1_controller
@@ -58,6 +59,7 @@ target_sources(m1_homing
     src/m1_homing.cpp
     src/dobot_m1.cpp
     src/dobot_m1_alarm.cpp
+    src/dobot_m1_interface.cpp
 )
 
 target_include_directories(m1_homing
