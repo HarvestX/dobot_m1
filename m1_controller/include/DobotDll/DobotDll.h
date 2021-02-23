@@ -1,9 +1,7 @@
-﻿#ifndef DOBOTDLL_H
-#define DOBOTDLL_H
+﻿#pragma once
 
 #include "dobotdll_global.h"
 #include "DobotType.h"
-#include "DobotAlarm.h"
 
 extern "C" DOBOTDLLSHARED_EXPORT int DobotExec(void);
 
@@ -210,7 +208,3 @@ extern "C" DOBOTDLLSHARED_EXPORT int CalcToolCoord(pstScaraPose Pose1, pstScaraP
 extern "C" DOBOTDLLSHARED_EXPORT int SetUserCoordParams(CoordParams *userCoordParams);
 extern "C" DOBOTDLLSHARED_EXPORT int SetToolCoordParams(CoordParams *toolCoordParams);
 extern "C" DOBOTDLLSHARED_EXPORT int SetUserAndToolCoordParams(CoordParams *userCoordParams, CoordParams *toolCoordParams);
-
-
-// MTest
-#endif // DOBOTDLL_H

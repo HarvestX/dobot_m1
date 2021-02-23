@@ -1,5 +1,4 @@
-﻿#ifndef DOBOTTYPE_H
-#define DOBOTTYPE_H
+﻿#pragma once
 
 #ifdef _MSC_VER
 typedef unsigned char uint8_t;
@@ -526,4 +525,3 @@ enum {
 };
 
 #pragma pack(pop)
-#endif

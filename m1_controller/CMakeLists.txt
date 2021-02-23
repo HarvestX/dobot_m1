@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.13.0)
 project(m1_controller)
 
 add_compile_options(-std=c++11)
@@ -17,52 +17,63 @@ catkin_package(
   CATKIN_DEPENDS roscpp rospy std_msgs m1_msgs
 )
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-  include/DobotDll
-  include/m1_controller
+# m1_controller
+add_executable(
+  m1_controller
 )
 
-link_directories(
-  lib/DobotDll_x64
+target_sources(m1_controller
+  PUBLIC
+    src/m1_controller.cpp
+    src/dobot_m1.cpp
+    src/dobot_m1_alarm.cpp
 )
 
-# Dobot M1
-add_library(
-  dobot_m1 src/dobot_m1.cpp
+target_include_directories(m1_controller
+  PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    include/dobot_m1
+    include/DobotDll
 )
 
-add_dependencies(
-  dobot_m1
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-
-target_link_libraries(
-  dobot_m1
+target_link_libraries(m1_controller
   ${catkin_LIBRARIES}
   DobotDllM1
 )
 
-# m1_controller
-add_executable(
-  m1_controller src/m1_controller.cpp
-)
 
-target_link_libraries(
-  m1_controller
-  ${catkin_LIBRARIES}
-  dobot_m1
+target_link_directories(m1_controller
+  PUBLIC
+    lib/DobotDll_x64
 )
 
 
 # m1_homing
 add_executable(
-  m1_homing src/m1_homing.cpp
+  m1_homing
 )
 
-target_link_libraries(
-  m1_homing
+target_sources(m1_homing
+  PUBLIC
+    src/m1_homing.cpp
+    src/dobot_m1.cpp
+    src/dobot_m1_alarm.cpp
+)
+
+target_include_directories(m1_homing
+  PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    include/dobot_m1
+    include/DobotDll
+
+)
+
+target_link_libraries(m1_homing
   ${catkin_LIBRARIES}
-  dobot_m1
+  DobotDllM1
+)
+
+target_link_directories(m1_homing
+  PUBLIC
+    lib/DobotDll_x64
 )

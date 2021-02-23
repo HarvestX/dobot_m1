@@ -319,7 +319,7 @@ namespace dobot_m1
     if (dobot_api::GetAlarmsState(alarmstate.value, &len, maxLen) ==
         dobot_api::DobotConnect_NoError)
     {
-      u_int32_t code = alarmStateToCode(alarmstate);
+      u_int32_t code = dobot_api::alarmStateToCode(alarmstate);
 
       if (code == 0)
         state = true;
@@ -329,7 +329,7 @@ namespace dobot_m1
 
   void DobotM1::LogAlarm_(dobot_api::alarmState alarmstate)
   {
-    uint32_t code = alarmStateToCode(alarmstate);
+    uint32_t code = dobot_api::alarmStateToCode(alarmstate);
     if (code == 0)
       return;
     const char *s = dobot_api::getAlartCodeName(dobot_api::AlarmCode(code));
