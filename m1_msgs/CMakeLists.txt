@@ -14,12 +14,17 @@ add_message_files(
   M1Jog.msg
 )
 
+add_service_files(
+  FILES
+  M1PtpService.srv
+  M1CpService.srv
+)
+
 add_action_files(
   FILES
   M1Ptp.action
   M1Cp.action
 )
-
 
 generate_messages(
   DEPENDENCIES

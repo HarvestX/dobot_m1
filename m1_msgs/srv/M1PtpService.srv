@@ -1,0 +1,3 @@
+m1_msgs/M1Ptp m1_ptp
+---
+std_msgs/Bool status
