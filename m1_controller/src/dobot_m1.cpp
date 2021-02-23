@@ -7,58 +7,58 @@ namespace dobot_m1
   {
     pnh_.param<std::string>("port", port_, "192.168.100.159");
 
-    initDobot();
+    InitDobot();
     joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 10);
-    timer_ = nh_.createTimer(ros::Duration(1), &DobotM1::timerCallback, this);
-    ptp_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::ptpCallback, this);
-    cp_sub_ = nh_.subscribe("cp_cmd", 1, &DobotM1::cpCallback, this);
-    jog_sub_ = nh_.subscribe("jog_cmd", 1, &DobotM1::jogCallback, this);
+    timer_ = nh_.createTimer(ros::Duration(1), &DobotM1::TimerCallback_, this);
+    ptp_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::PtpCallback_, this);
+    cp_sub_ = nh_.subscribe("cp_cmd", 1, &DobotM1::CpCallback_, this);
+    jog_sub_ = nh_.subscribe("jog_cmd", 1, &DobotM1::JogCallback_, this);
     ptp_service_ = nh_.advertiseService("ptp_service", &DobotM1::PtpServiceCallback_, this);
     cp_service_ = nh_.advertiseService("cp_service", &DobotM1::CpServiceCallback_, this);
   }
 
   DobotM1::~DobotM1() { dobot_api::DisconnectDobot(); }
 
-  void DobotM1::connectDobot()
+  void DobotM1::ConnectDobot()
   {
     ROS_INFO("connecting to [%s]", DobotM1::port_.c_str());
-    while (!check_connection_(
+    while (!CheckConnection_(
         dobot_api::ConnectDobot(port_.c_str(), 115200, nullptr, nullptr)))
     {
     }
   }
 
-  void DobotM1::initDobot()
+  void DobotM1::InitDobot()
   {
-    connectDobot();
+    ConnectDobot();
 
     // set timeout
     uint32_t timeout = 50;
     while (
-        !check_communication_(dobot_api::SetCmdTimeout(timeout), "Set Timeout"))
+        !CheckCommunication_(dobot_api::SetCmdTimeout(timeout), "Set Timeout"))
     {
     }
     // clean queue
-    while (!check_communication_(dobot_api::SetQueuedCmdClear(), "Queue Clear"))
+    while (!CheckCommunication_(dobot_api::SetQueuedCmdClear(), "Queue Clear"))
     {
     }
 
-    while (!check_communication_(dobot_api::ClearAllAlarmsState(),
-                                 "Clear All Alarm"))
+    while (!CheckCommunication_(dobot_api::ClearAllAlarmsState(),
+                                "Clear All Alarm"))
     {
     }
 
-    while (!check_communication_(dobot_api::SetQueuedCmdStartExec(),
-                                 "Start Queue"))
+    while (!CheckCommunication_(dobot_api::SetQueuedCmdStartExec(),
+                                "Start Queue"))
     {
     }
 
     return;
   }
 
-  void DobotM1::timerCallback(const ros::TimerEvent &)
+  void DobotM1::TimerCallback_(const ros::TimerEvent &)
   {
-    checkAlarm_();
+    CheckAlarm_();
 
     // Publish Position
     dobot_api::Pose pose;
@@ -82,16 +82,12 @@ namespace dobot_m1
     joint_pub_.publish(joint_msg);
   }
 
-  void DobotM1::ptpCallback(const m1_msgs::M1Ptp &msg)
+  void DobotM1::PtpCallback_(const m1_msgs::M1Ptp &msg)
   {
     uint64_t lastIndex;
-    // set velocity
-    float vel;
-    vel = check_velocity_(msg.vel);
-
-    // set acceleration
-    float acc;
-    acc = check_acceleration_(acc);
+    // set velocity acceleration
+    float vel = CheckVelocity_(msg.vel);
+    float acc = CheckAcceleration_(msg.acc);
 
     dobot_api::PTPCommonParams ptpCommonParams;
     ptpCommonParams.velocityRatio = vel;
@@ -106,20 +102,20 @@ namespace dobot_m1
 
     // Start session with dobot
     while (
-        !check_communication_(dobot_api::SetArmOrientation(
-                                  dobot_api::LeftyArmOrientation, true, nullptr),
-                              "Set Arm Orientation"))
+        !CheckCommunication_(dobot_api::SetArmOrientation(
+                                 dobot_api::LeftyArmOrientation, true, nullptr),
+                             "Set Arm Orientation"))
     {
     }
-    while (!check_communication_(
+    while (!CheckCommunication_(
         SetPTPCommonParams(&ptpCommonParams, true, nullptr), "Set PTP Param"))
     {
     }
-    while (!check_communication_(dobot_api::SetPTPCmd(&cmd, true, nullptr),
-                                 "Set PTP Cmd"))
+    while (!CheckCommunication_(dobot_api::SetPTPCmd(&cmd, true, nullptr),
+                                "Set PTP Cmd"))
     {
     }
-    checkAlarm_();
+    CheckAlarm_();
   }
 
   bool DobotM1::PtpServiceCallback_(m1_msgs::M1PtpServiceRequest &req, m1_msgs::M1PtpServiceResponse &res)
@@ -128,16 +124,12 @@ namespace dobot_m1
     return true;
   }
 
-  void DobotM1::cpCallback(const m1_msgs::M1Cp &msg)
+  void DobotM1::CpCallback_(const m1_msgs::M1Cp &msg)
   {
     uint64_t lastIndex;
-    // set velocity
-    float vel;
-    vel = check_velocity_(msg.vel);
-
-    // set acceleration
-    float acc;
-    acc = check_acceleration_(acc);
+    // set velocity acceleration
+    float vel = CheckVelocity_(msg.vel);
+    float acc = CheckAcceleration_(msg.acc);
 
     dobot_api::CPParams cpParams;
     cpParams.juncitionVel = vel;
@@ -152,19 +144,19 @@ namespace dobot_m1
     // Start session with dobot
     // Cp command only works on RightyArmOrientation
     while (
-        !check_communication_(dobot_api::SetArmOrientation(
-                                  dobot_api::RightyArmOrientation, true, nullptr),
-                              "Set Arm Orientation"))
+        !CheckCommunication_(dobot_api::SetArmOrientation(
+                                 dobot_api::RightyArmOrientation, true, nullptr),
+                             "Set Arm Orientation"))
     {
     }
-    while (!check_communication_(SetCPParams(&cpParams, true, nullptr),
-                                 "Set CP Param"))
+    while (!CheckCommunication_(SetCPParams(&cpParams, true, nullptr),
+                                "Set CP Param"))
     {
     }
-    while (!check_communication_(SetCPCmd(&cmd, true, nullptr), "Set CP Cmd"))
+    while (!CheckCommunication_(SetCPCmd(&cmd, true, nullptr), "Set CP Cmd"))
     {
     }
-    checkAlarm_();
+    CheckAlarm_();
   }
 
   bool DobotM1::CpServiceCallback_(m1_msgs::M1CpServiceRequest &req, m1_msgs::M1CpServiceResponse &res)
@@ -173,15 +165,11 @@ namespace dobot_m1
     return true;
   }
 
-  void DobotM1::jogCallback(const m1_msgs::M1Jog &msg)
+  void DobotM1::JogCallback_(const m1_msgs::M1Jog &msg)
   {
-    // set velocity
-    float vel;
-    vel = check_velocity_(vel);
-
-    // set acceleration
-    float acc;
-    acc = check_acceleration_(acc);
+    // set velocity and acceleration
+    float vel = CheckVelocity_(msg.vel);
+    float acc = CheckAcceleration_(msg.acc);
 
     dobot_api::JOGCommonParams jogCommonParams;
     jogCommonParams.velocityRatio = vel;
@@ -192,33 +180,33 @@ namespace dobot_m1
     cmd.cmd = msg.jogCmd;
 
     // Start session with dobot
-    while (!check_communication_(
+    while (!CheckCommunication_(
         SetJOGCommonParams(&jogCommonParams, true, nullptr), "Set JOG Param"))
     {
     }
-    while (!check_communication_(dobot_api::SetJOGCmd(&cmd, false, nullptr),
-                                 "Set JOG Cmd"))
+    while (!CheckCommunication_(dobot_api::SetJOGCmd(&cmd, false, nullptr),
+                                "Set JOG Cmd"))
     {
     }
-    checkAlarm_();
+    CheckAlarm_();
   }
 
-  void DobotM1::homing()
+  void DobotM1::Homing()
   {
     // clean queue
-    while (!check_communication_(dobot_api::SetQueuedCmdClear(), "Queue Clear"))
+    while (!CheckCommunication_(dobot_api::SetQueuedCmdClear(), "Queue Clear"))
     {
     }
 
-    while (!check_communication_(dobot_api::SetQueuedCmdStartExec(),
-                                 "Start Queue"))
+    while (!CheckCommunication_(dobot_api::SetQueuedCmdStartExec(),
+                                "Start Queue"))
     {
     }
 
     uint64_t lastIndex;
     uint64_t currentIndex;
 
-    while (!check_communication_(
+    while (!CheckCommunication_(
         dobot_api::SetHOMEWithSwitch(0, true, &lastIndex), "Homing"))
     {
     }
@@ -236,7 +224,7 @@ namespace dobot_m1
     return;
   }
 
-  bool DobotM1::check_connection_(uint8_t status)
+  bool DobotM1::CheckConnection_(uint8_t status)
   {
     switch (status)
     {
@@ -255,7 +243,7 @@ namespace dobot_m1
     return false;
   }
 
-  bool DobotM1::check_communication_(uint8_t status, std::string process_name)
+  bool DobotM1::CheckCommunication_(uint8_t status, std::string process_name)
   {
     switch (status)
     {
@@ -278,7 +266,7 @@ namespace dobot_m1
     return false;
   }
 
-  float DobotM1::check_velocity_(float vel)
+  float DobotM1::CheckVelocity_(float vel)
   {
     if (vel < MIN_VEL)
     {
@@ -293,7 +281,7 @@ namespace dobot_m1
     return vel;
   }
 
-  float DobotM1::check_acceleration_(float acc)
+  float DobotM1::CheckAcceleration_(float acc)
   {
     if (acc < MIN_ACC)
     {
@@ -308,7 +296,7 @@ namespace dobot_m1
     return acc;
   }
 
-  void DobotM1::checkAlarm_()
+  void DobotM1::CheckAlarm_()
   {
     // Check Alarm
     dobot_api::alarmState alarmstate;
@@ -317,13 +305,13 @@ namespace dobot_m1
     if (dobot_api::GetAlarmsState(alarmstate.value, &len, maxLen) ==
         dobot_api::DobotConnect_NoError)
     {
-      publishAlarm_(alarmstate);
+      LogAlarm_(alarmstate);
       dobot_api::SetQueuedCmdClear();
       dobot_api::ClearAllAlarmsState();
     }
   }
 
-  bool DobotM1::assertAlarm_()
+  bool DobotM1::AssertAlarm_()
   {
     dobot_api::alarmState alarmstate;
     uint32_t len, maxLen = 32;
@@ -339,7 +327,7 @@ namespace dobot_m1
     return state;
   }
 
-  void DobotM1::publishAlarm_(dobot_api::alarmState alarmstate)
+  void DobotM1::LogAlarm_(dobot_api::alarmState alarmstate)
   {
     uint32_t code = alarmStateToCode(alarmstate);
     if (code == 0)

@@ -28,22 +28,25 @@ namespace dobot_m1
     DobotM1();
     ~DobotM1();
 
-    void connectDobot();
-    void initDobot();
-    void timerCallback(const ros::TimerEvent &);
-    void ptpCallback(const m1_msgs::M1Ptp &msg);
-    void cpCallback(const m1_msgs::M1Cp &msg);
-    void jogCallback(const m1_msgs::M1Jog &msg);
-    void homing();
+    void ConnectDobot();
+    void InitDobot();
+    void Homing();
 
   private:
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;
-    ros::Publisher joint_pub_;
+
     ros::Subscriber ptp_sub_;
     ros::Subscriber cp_sub_;
     ros::Subscriber jog_sub_;
+    void PtpCallback_(const m1_msgs::M1Ptp &msg);
+    void CpCallback_(const m1_msgs::M1Cp &msg);
+    void JogCallback_(const m1_msgs::M1Jog &msg);
+
+    // timer publisher for joint state
     ros::Timer timer_;
+    ros::Publisher joint_pub_;
+    void TimerCallback_(const ros::TimerEvent &);
 
     // services
     ros::ServiceServer ptp_service_;
@@ -53,12 +56,12 @@ namespace dobot_m1
 
     std::string port_;
 
-    bool check_connection_(uint8_t status);
-    bool check_communication_(uint8_t status, std::string process_name);
-    float check_velocity_(float vel);
-    float check_acceleration_(float acc);
-    void checkAlarm_();
-    bool assertAlarm_();
-    void publishAlarm_(dobot_api::alarmState alarmstate);
+    bool CheckConnection_(uint8_t status);
+    bool CheckCommunication_(uint8_t status, std::string process_name);
+    float CheckVelocity_(float vel);
+    float CheckAcceleration_(float acc);
+    void CheckAlarm_();
+    bool AssertAlarm_();
+    void LogAlarm_(dobot_api::alarmState alarmstate);
   };
 } // namespace dobot_m1
