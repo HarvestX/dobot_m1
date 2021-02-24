@@ -26,6 +26,9 @@ bool TryClearAllAlarmsState();
 void SetQueuedCmdStartExec();
 bool TrySetQueuedCmdStartExec();
 
+void WaitQueuedCmd(const uint64_t last_index);
+bool TryWaitQueuedCmd(const uint64_t last_index);
+
 void GetAlarmCode(uint32_t &code);
 bool TryGetAlarmCode(uint32_t &code);
 bool CheckAlarmCode(const uint32_t &code);

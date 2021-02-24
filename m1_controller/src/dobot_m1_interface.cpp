@@ -67,6 +67,34 @@ bool TrySetQueuedCmdStartExec()
   return CheckCommunication(status);
 }
 
+void WaitQueuedCmd(const uint64_t last_index)
+{
+  uint64_t current_index;
+  while (1)
+  {
+    const uint8_t status = dobot_api::GetQueuedCmdCurrentIndex(&current_index);
+    CheckCommunicationWithException("GetQueuedCmdCurrentIndex", status);
+
+    if (last_index <= current_index)
+      break;
+  }
+};
+
+bool TryWaitQueuedCmd(const uint64_t last_index)
+{
+  uint64_t current_index;
+  while (1)
+  {
+    const uint8_t status = dobot_api::GetQueuedCmdCurrentIndex(&current_index);
+    if (!CheckCommunication(status))
+      return false;
+
+    if (last_index <= current_index)
+      break;
+  }
+  return true;
+}
+
 void GetAlarmCode(uint32_t &code)
 {
   dobot_api::alarmState alarm_state;
@@ -89,7 +117,8 @@ bool TryGetAlarmCode(uint32_t &code)
   return true;
 }
 
-bool CheckAlarmCode(const uint32_t &code) {
+bool CheckAlarmCode(const uint32_t &code)
+{
   return code == 0;
 }
 

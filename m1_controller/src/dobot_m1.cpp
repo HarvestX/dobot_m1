@@ -37,10 +37,9 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
 
   // Publish Position
   dobot_api::Pose pose;
-  if (GetPose(&pose) != dobot_api::DobotCommunicate_NoError)
-  {
+  uint8_t status = dobot_api::GetPose(&pose);
+  if (!dobot_m1_interface::CheckCommunication(status))
     return;
-  };
 
   sensor_msgs::JointState joint_msg;
   joint_msg.header.stamp = ros::Time::now();
@@ -94,11 +93,13 @@ void DobotM1::PtpParamsCallback_(const m1_msgs::M1PtpParams &msg)
   ptpCommonParams.accelerationRatio = acc;
 
   uint8_t status;
-  std::string str;
   status = dobot_api::SetPTPCommonParams(&ptpCommonParams, false, nullptr);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
   if (!dobot_m1_interface::CheckCommunication(status))
+  {
+    std::string str;
+    dobot_m1_interface::CommunicationStatus2String(status, str);
     ROS_ERROR("%s", str.c_str());
+  }
 }
 
 bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_msgs::M1PtpCmdServiceResponse &res)
@@ -117,11 +118,13 @@ void DobotM1::CpParamsCallback_(const m1_msgs::M1CpParams &msg)
   cpParams.planAcc = acc;
 
   uint8_t status;
-  std::string str;
   status = dobot_api::SetCPParams(&cpParams, false, nullptr);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
   if (!dobot_m1_interface::CheckCommunication(status))
+  {
+    std::string str;
+    dobot_m1_interface::CommunicationStatus2String(status, str);
     ROS_ERROR("%s", str.c_str());
+  }
 
   CheckAlarm_();
 }
@@ -166,9 +169,13 @@ void DobotM1::JogCmdCallback_(const m1_msgs::M1JogCmd &msg)
   cmd.isJoint = msg.isJoint;
   cmd.cmd = msg.jogCmd;
 
-  // Start session with dobot
-  while (!CheckCommunication_(dobot_api::SetJOGCmd(&cmd, false, nullptr), "Set JOG Cmd"))
+  uint8_t status;
+  status = dobot_api::SetJOGCmd(&cmd, false, nullptr);
+  if (!dobot_m1_interface::CheckCommunication(status))
   {
+    std::string str;
+    dobot_m1_interface::CommunicationStatus2String(status, str);
+    ROS_ERROR("%s", str.c_str());
   }
   DobotM1::CheckAlarm_();
 }
@@ -184,39 +191,30 @@ void DobotM1::JogParamsCallback_(const m1_msgs::M1JogParams &msg)
   jogCommonParams.accelerationRatio = acc;
 
   uint8_t status;
-  std::string str;
   status = dobot_api::SetJOGCommonParams(&jogCommonParams, false, nullptr);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
   if (!dobot_m1_interface::CheckCommunication(status))
+  {
+    std::string str;
+    dobot_m1_interface::CommunicationStatus2String(status, str);
     ROS_ERROR("%s", str.c_str());
+  }
   DobotM1::CheckAlarm_();
 }
 
 void DobotM1::Homing()
 {
   // clean queue
-  while (!CheckCommunication_(dobot_api::SetQueuedCmdClear(), "Queue Clear"))
-  {
-  }
+  dobot_m1_interface::SetQueuedCmdClear();
+  dobot_m1_interface::SetQueuedCmdStartExec();
 
-  while (!CheckCommunication_(dobot_api::SetQueuedCmdStartExec(), "Start Queue"))
-  {
-  }
+  uint64_t last_index;
+  uint64_t current_index;
+  uint8_t status;
 
-  uint64_t lastIndex;
-  uint64_t currentIndex;
+  status = dobot_api::SetHOMEWithSwitch(0, true, &last_index);
+  dobot_m1_interface::CheckCommunicationWithException("SetHOMEWithSwitch", status);
 
-  while (!CheckCommunication_(dobot_api::SetHOMEWithSwitch(0, true, &lastIndex), "Homing"))
-  {
-  }
-  while (1)
-  {
-    while (dobot_api::GetQueuedCmdCurrentIndex(&currentIndex) != dobot_api::DobotCommunicate_NoError)
-    {
-    }
-    if (lastIndex <= currentIndex)
-      break;
-  }
+  dobot_m1_interface::WaitQueuedCmd(last_index);
 
   ROS_INFO("Homing Successfully Finished!");
   return;
@@ -236,29 +234,6 @@ bool DobotM1::CheckConnection_(uint8_t status)
       break;
     default:
       ROS_ERROR("Unexpected Return");
-      break;
-  }
-  return false;
-}
-
-bool DobotM1::CheckCommunication_(uint8_t status, std::string process_name)
-{
-  switch (status)
-  {
-    case dobot_api::DobotCommunicate_NoError:
-      ROS_INFO("%s", process_name.c_str());
-      return true;
-    case dobot_api::DobotCommunicate_BufferFull:
-      ROS_ERROR("Dobot Communication Buffer Full: %s", process_name.c_str());
-      break;
-    case dobot_api::DobotCommunicate_Timeout:
-      ROS_ERROR("Dobot Communication Timeout: %s", process_name.c_str());
-      break;
-    case dobot_api::DobotCommunicate_InvalidParams:
-      ROS_ERROR("Dobot Communication Invalid Params: %s", process_name.c_str());
-      break;
-    default:
-      ROS_ERROR("Unexpected Return: %s", process_name.c_str());
       break;
   }
   return false;
