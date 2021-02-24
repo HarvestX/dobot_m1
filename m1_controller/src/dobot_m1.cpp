@@ -162,7 +162,6 @@ bool DobotM1::CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs
 
 void DobotM1::JogCmdCallback_(const m1_msgs::M1JogCmd &msg)
 {
-
   dobot_api::JOGCmd cmd;
   cmd.isJoint = msg.isJoint;
   cmd.cmd = msg.jogCmd;
@@ -171,10 +170,11 @@ void DobotM1::JogCmdCallback_(const m1_msgs::M1JogCmd &msg)
   while (!CheckCommunication_(dobot_api::SetJOGCmd(&cmd, false, nullptr), "Set JOG Cmd"))
   {
   }
-  CheckAlarm_();
+  DobotM1::CheckAlarm_();
 }
 
-void  DobotM1::JogParamsCallback_(const m1_msgs::M1JogParams &msg) {
+void DobotM1::JogParamsCallback_(const m1_msgs::M1JogParams &msg)
+{
   // set velocity and acceleration
   float vel = CheckVelocity_(msg.vel);
   float acc = CheckAcceleration_(msg.acc);
@@ -189,7 +189,7 @@ void  DobotM1::JogParamsCallback_(const m1_msgs::M1JogParams &msg) {
   dobot_m1_interface::CommunicationStatus2String(status, str);
   if (!dobot_m1_interface::CheckCommunication(status))
     ROS_ERROR("%s", str.c_str());
-  CheckAlarm_();
+  DobotM1::CheckAlarm_();
 }
 
 void DobotM1::Homing()
@@ -296,40 +296,25 @@ float DobotM1::CheckAcceleration_(float acc)
 
 void DobotM1::CheckAlarm_()
 {
-  // Check Alarm
-  dobot_api::alarmState alarmstate;
-  uint32_t len, maxLen = 32;
-
-  if (dobot_api::GetAlarmsState(alarmstate.value, &len, maxLen) == dobot_api::DobotConnect_NoError)
+  uint32_t code;
+  if (!dobot_m1_interface::TryGetAlarmCode(code))
   {
-    LogAlarm_(alarmstate);
-    dobot_api::SetQueuedCmdClear();
-    dobot_api::ClearAllAlarmsState();
-  }
-}
-
-bool DobotM1::AssertAlarm_()
-{
-  dobot_api::alarmState alarmstate;
-  uint32_t len, maxLen = 32;
-  bool state = false;
-  if (dobot_api::GetAlarmsState(alarmstate.value, &len, maxLen) == dobot_api::DobotConnect_NoError)
-  {
-    u_int32_t code = dobot_api::alarmStateToCode(alarmstate);
-
-    if (code == 0)
-      state = true;
-  }
-  return state;
-}
-
-void DobotM1::LogAlarm_(dobot_api::alarmState alarmstate)
-{
-  uint32_t code = dobot_api::alarmStateToCode(alarmstate);
-  if (code == 0)
+    ROS_ERROR("FAILED TO GET ALARM CODE");
     return;
-  const char *s = dobot_api::getAlartCodeName(dobot_api::AlarmCode(code));
-  ROS_ERROR("%s", s);
+  }
+
+  if (dobot_m1_interface::CheckAlarmCode(code))
+    return;
+
+  std::string str;
+  dobot_m1_interface::AlarmCode2String(code, str);
+  ROS_ERROR("%s", str.c_str());
+
+  if (!dobot_m1_interface::TrySetQueuedCmdClear())
+    ROS_ERROR("FAILED TO SET QUEUED CMD CLEAR");
+
+  if (!dobot_m1_interface::TryClearAllAlarmsState())
+    ROS_ERROR("FAILED TO CLEAR ALL ALARMS STATE");
 }
 
 }  // namespace dobot_m1

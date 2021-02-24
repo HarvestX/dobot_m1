@@ -67,6 +67,38 @@ bool TrySetQueuedCmdStartExec()
   return CheckCommunication(status);
 }
 
+void GetAlarmCode(uint32_t &code)
+{
+  dobot_api::alarmState alarm_state;
+  uint32_t len;
+  uint8_t state;
+  state = dobot_api::GetAlarmsState(alarm_state.value, &len, 32);
+  CheckCommunicationWithException("GetAlarmsState", state);
+  code = dobot_api::AlarmStateToCode(alarm_state);
+}
+
+bool TryGetAlarmCode(uint32_t &code)
+{
+  dobot_api::alarmState alarm_state;
+  uint32_t len;
+  uint8_t state;
+  state = dobot_api::GetAlarmsState(alarm_state.value, &len, 32);
+  if (!CheckCommunication(state))
+    return false;
+  code = dobot_api::AlarmStateToCode(alarm_state);
+  return true;
+}
+
+bool CheckAlarmCode(const uint32_t &code) {
+  return code == 0;
+}
+
+void AlarmCode2String(const uint32_t &code, std::string &str)
+{
+  str = "";
+  str = dobot_api::GetAlarmsCodeName(dobot_api::AlarmCode(code));
+}
+
 void CheckCommunicationWithException(const std::string &called_from, const uint8_t status)
 {
   if (!CheckCommunication(status))

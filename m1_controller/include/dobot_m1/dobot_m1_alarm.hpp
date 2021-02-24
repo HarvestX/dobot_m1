@@ -164,7 +164,7 @@ namespace dobot_api
     ERR_MOTOR_ENDIO_MAX = 0xBf,
   };
 
-  const char *getAlartCodeName(const AlarmCode value);
-  uint32_t alarmStateToCode(alarmState alarmstate);
+  const char *GetAlarmsCodeName(const AlarmCode value);
+  uint32_t AlarmStateToCode(alarmState alarmstate);
 
 }

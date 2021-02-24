@@ -2,7 +2,7 @@
 
 namespace dobot_api
 {
-  const char *getAlartCodeName(const AlarmCode value)
+  const char *GetAlarmsCodeName(const AlarmCode value)
   {
     const char *s = 0;
 #define PROCESS_VAL(p) \
@@ -149,7 +149,7 @@ namespace dobot_api
     return s;
   }
 
-  uint32_t alarmStateToCode(alarmState alarmstate)
+  uint32_t AlarmStateToCode(alarmState alarmstate)
   {
     int len = sizeof(alarmstate); // 32
     uint32_t code = 0;

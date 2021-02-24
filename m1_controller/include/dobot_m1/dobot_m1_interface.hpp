@@ -26,6 +26,11 @@ bool TryClearAllAlarmsState();
 void SetQueuedCmdStartExec();
 bool TrySetQueuedCmdStartExec();
 
+void GetAlarmCode(uint32_t &code);
+bool TryGetAlarmCode(uint32_t &code);
+bool CheckAlarmCode(const uint32_t &code);
+void AlarmCode2String(const uint32_t &code, std::string &str);
+
 void CheckConnectionWithException(const std::string &called_from, const uint8_t status);
 bool CheckConnection(const uint8_t status);
 void ConnectionStatus2String(const uint8_t status, std::string &str);
