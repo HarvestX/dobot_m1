@@ -108,27 +108,6 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
   return true;
 }
 
-void DobotM1::CpParamsCallback_(const m1_msgs::M1CpParams &msg)
-{
-  float vel = CheckVelocity_(msg.vel);
-  float acc = CheckAcceleration_(msg.acc);
-
-  dobot_api::CPParams cpParams;
-  cpParams.juncitionVel = vel;
-  cpParams.planAcc = acc;
-
-  uint8_t status;
-  status = dobot_api::SetCPParams(&cpParams, false, nullptr);
-  if (!dobot_m1_interface::CheckCommunication(status))
-  {
-    std::string str;
-    dobot_m1_interface::CommunicationStatus2String(status, str);
-    ROS_ERROR("%s", str.c_str());
-  }
-
-  CheckAlarm_();
-}
-
 void DobotM1::CpCmdCallback_(const m1_msgs::M1CpCmd &msg)
 {
   dobot_api::CPCmd cmd;
@@ -156,6 +135,28 @@ void DobotM1::CpCmdCallback_(const m1_msgs::M1CpCmd &msg)
 
   CheckAlarm_();
 }
+
+void DobotM1::CpParamsCallback_(const m1_msgs::M1CpParams &msg)
+{
+  float vel = CheckVelocity_(msg.vel);
+  float acc = CheckAcceleration_(msg.acc);
+
+  dobot_api::CPParams cpParams;
+  cpParams.juncitionVel = vel;
+  cpParams.planAcc = acc;
+
+  uint8_t status;
+  status = dobot_api::SetCPParams(&cpParams, false, nullptr);
+  if (!dobot_m1_interface::CheckCommunication(status))
+  {
+    std::string str;
+    dobot_m1_interface::CommunicationStatus2String(status, str);
+    ROS_ERROR("%s", str.c_str());
+  }
+
+  CheckAlarm_();
+}
+
 
 bool DobotM1::CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs::M1CpCmdServiceResponse &res)
 {
