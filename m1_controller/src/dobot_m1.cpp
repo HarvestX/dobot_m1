@@ -57,7 +57,6 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
 
 void DobotM1::PtpCmdCallback_(const m1_msgs::M1PtpCmd &msg)
 {
-  uint64_t lastIndex;
   dobot_api::PTPCmd cmd;
   cmd.ptpMode = msg.ptpMode;
   cmd.x = msg.x;
@@ -106,7 +105,50 @@ void DobotM1::PtpParamsCallback_(const m1_msgs::M1PtpParams &msg)
 
 bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_msgs::M1PtpCmdServiceResponse &res)
 {
-  // todo
+  dobot_api::PTPCmd cmd;
+  cmd.ptpMode = req.m1_ptp_cmd.ptpMode;
+  cmd.x = req.m1_ptp_cmd.x;
+  cmd.y = req.m1_ptp_cmd.y;
+  cmd.z = req.m1_ptp_cmd.z;
+  cmd.r = req.m1_ptp_cmd.r;
+
+  uint8_t status;
+  uint64_t last_index;
+  std::string str;
+
+  // Start session with dobot
+  status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, true, nullptr);
+  dobot_m1_interface::CommunicationStatus2String(status, str);
+  if (dobot_m1_interface::CheckCommunication(status)) {
+    ROS_ERROR("%s", str.c_str());
+    res.status.data = false;
+    return false;
+  }
+
+  dobot_api::SetPTPCmd(&cmd, true, &last_index);
+  dobot_m1_interface::CommunicationStatus2String(status, str);
+  if (dobot_m1_interface::CheckCommunication(status)) {
+    ROS_ERROR("%s", str.c_str());
+    res.status.data = false;
+    return false;
+  }
+
+  // Check Error
+  if (!DobotM1::TryCheckAlarm_())
+  {
+    res.status.data = false;
+    return false;
+  }
+
+  // Wait Queued Cmd
+  if (!dobot_m1_interface::TryWaitQueuedCmd(last_index))
+  {
+    ROS_ERROR("FAILED TO WAIT QUEUED CMD");
+    res.status.data = false;
+    return false;
+  }
+
+  res.status.data = true;
   return true;
 }
 
@@ -168,9 +210,7 @@ bool DobotM1::CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs
   cmd.y = req.m1_cp_cmd.y;
   cmd.z = req.m1_cp_cmd.z;
 
-  bool ret;
   uint8_t status;
-  uint32_t code;
   uint64_t last_index;
   std::string str;
 
