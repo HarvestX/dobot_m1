@@ -63,5 +63,6 @@ private:
   float CheckVelocity_(float vel);
   float CheckAcceleration_(float acc);
   void CheckAlarm_();
+  bool TryCheckAlarm_();
 };
 }  // namespace dobot_m1

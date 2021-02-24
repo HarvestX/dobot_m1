@@ -7,6 +7,7 @@ DobotM1::DobotM1() : nh_(), pnh_("~")
   pnh_.param<std::string>("port", port_, "192.168.100.159");
 
   InitDobot();
+
   joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 10);
   timer_ = nh_.createTimer(ros::Duration(1), &DobotM1::TimerCallback_, this);
   ptp_cmd_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::PtpCmdCallback_, this);
@@ -33,8 +34,6 @@ void DobotM1::InitDobot()
 
 void DobotM1::TimerCallback_(const ros::TimerEvent &)
 {
-  CheckAlarm_();
-
   // Publish Position
   dobot_api::Pose pose;
   uint8_t status = dobot_api::GetPose(&pose);
@@ -79,7 +78,8 @@ void DobotM1::PtpCmdCallback_(const m1_msgs::M1PtpCmd &msg)
   dobot_m1_interface::CommunicationStatus2String(status, str);
   if (dobot_m1_interface::CheckCommunication(status))
     ROS_ERROR("%s", str.c_str());
-  return;
+
+  DobotM1::TryCheckAlarm_();
 }
 
 void DobotM1::PtpParamsCallback_(const m1_msgs::M1PtpParams &msg)
@@ -100,6 +100,8 @@ void DobotM1::PtpParamsCallback_(const m1_msgs::M1PtpParams &msg)
     dobot_m1_interface::CommunicationStatus2String(status, str);
     ROS_ERROR("%s", str.c_str());
   }
+
+  DobotM1::TryCheckAlarm_();
 }
 
 bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_msgs::M1PtpCmdServiceResponse &res)
@@ -122,7 +124,7 @@ void DobotM1::CpCmdCallback_(const m1_msgs::M1CpCmd &msg)
 
   // Cp command only works on RightyArmOrientation
   // Set Arm Orientation
-  status = dobot_api::SetArmOrientation(dobot_api::RightyArmOrientation, true, nullptr);
+  status = dobot_api::SetArmOrientation(dobot_api::RightyArmOrientation, false, nullptr);
   dobot_m1_interface::CommunicationStatus2String(status, str);
   if (!dobot_m1_interface::CheckCommunication(status))
     ROS_ERROR("%s", str.c_str());
@@ -133,7 +135,7 @@ void DobotM1::CpCmdCallback_(const m1_msgs::M1CpCmd &msg)
   if (!dobot_m1_interface::CheckCommunication(status))
     ROS_ERROR("%s", str.c_str());
 
-  CheckAlarm_();
+  DobotM1::TryCheckAlarm_();
 }
 
 void DobotM1::CpParamsCallback_(const m1_msgs::M1CpParams &msg)
@@ -154,13 +156,61 @@ void DobotM1::CpParamsCallback_(const m1_msgs::M1CpParams &msg)
     ROS_ERROR("%s", str.c_str());
   }
 
-  CheckAlarm_();
+  DobotM1::TryCheckAlarm_();
 }
-
 
 bool DobotM1::CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs::M1CpCmdServiceResponse &res)
 {
   // todo
+  dobot_api::CPCmd cmd;
+  cmd.cpMode = req.m1_cp_cmd.cpMode;
+  cmd.x = req.m1_cp_cmd.x;
+  cmd.y = req.m1_cp_cmd.y;
+  cmd.z = req.m1_cp_cmd.z;
+
+  bool ret;
+  uint8_t status;
+  uint32_t code;
+  uint64_t last_index;
+  std::string str;
+
+  // Cp command only works on RightyArmOrientation
+  // Set Arm Orientation
+  status = dobot_api::SetArmOrientation(dobot_api::RightyArmOrientation, true, nullptr);
+  dobot_m1_interface::CommunicationStatus2String(status, str);
+  if (!dobot_m1_interface::CheckCommunication(status))
+  {
+    ROS_ERROR("%s", str.c_str());
+    res.status.data = false;
+    return false;
+  }
+
+  // Set Cp Cmd
+  status = dobot_api::SetCPCmd(&cmd, true, &last_index);
+  dobot_m1_interface::CommunicationStatus2String(status, str);
+  if (!dobot_m1_interface::CheckCommunication(status))
+  {
+    ROS_ERROR("%s", str.c_str());
+    res.status.data = false;
+    return false;
+  }
+
+  // Check Error
+  if (!DobotM1::TryCheckAlarm_())
+  {
+    res.status.data = false;
+    return false;
+  }
+
+  // Wait Queued Cmd
+  if (!dobot_m1_interface::TryWaitQueuedCmd(last_index))
+  {
+    ROS_ERROR("FAILED TO WAIT QUEUED CMD");
+    res.status.data = false;
+    return false;
+  }
+
+  res.status.data = true;
   return true;
 }
 
@@ -178,7 +228,7 @@ void DobotM1::JogCmdCallback_(const m1_msgs::M1JogCmd &msg)
     dobot_m1_interface::CommunicationStatus2String(status, str);
     ROS_ERROR("%s", str.c_str());
   }
-  DobotM1::CheckAlarm_();
+  DobotM1::TryCheckAlarm_();
 }
 
 void DobotM1::JogParamsCallback_(const m1_msgs::M1JogParams &msg)
@@ -199,7 +249,7 @@ void DobotM1::JogParamsCallback_(const m1_msgs::M1JogParams &msg)
     dobot_m1_interface::CommunicationStatus2String(status, str);
     ROS_ERROR("%s", str.c_str());
   }
-  DobotM1::CheckAlarm_();
+  DobotM1::TryCheckAlarm_();
 }
 
 void DobotM1::Homing()
@@ -215,6 +265,7 @@ void DobotM1::Homing()
   status = dobot_api::SetHOMEWithSwitch(0, true, &last_index);
   dobot_m1_interface::CheckCommunicationWithException("SetHOMEWithSwitch", status);
 
+  DobotM1::CheckAlarm_();
   dobot_m1_interface::WaitQueuedCmd(last_index);
 
   ROS_INFO("Homing Successfully Finished!");
@@ -250,28 +301,48 @@ float DobotM1::CheckAcceleration_(float acc)
   }
   return acc;
 }
-
 void DobotM1::CheckAlarm_()
+{
+  uint32_t code;
+  dobot_m1_interface::GetAlarmCode(code);
+  if (dobot_m1_interface::CheckAlarmCode(code))
+    return;
+  std::string str;
+  dobot_m1_interface::AlarmCode2String(code, str);
+  ROS_ERROR("%s", str.c_str());
+  dobot_m1_interface::SetQueuedCmdClear();
+  dobot_m1_interface::ClearAllAlarmsState();
+}
+
+bool DobotM1::TryCheckAlarm_()
 {
   uint32_t code;
   if (!dobot_m1_interface::TryGetAlarmCode(code))
   {
     ROS_ERROR("FAILED TO GET ALARM CODE");
-    return;
+    return false;
   }
 
   if (dobot_m1_interface::CheckAlarmCode(code))
-    return;
+    // OK
+    return true;
 
   std::string str;
   dobot_m1_interface::AlarmCode2String(code, str);
   ROS_ERROR("%s", str.c_str());
 
   if (!dobot_m1_interface::TrySetQueuedCmdClear())
+  {
     ROS_ERROR("FAILED TO SET QUEUED CMD CLEAR");
+    return false;
+  }
 
   if (!dobot_m1_interface::TryClearAllAlarmsState())
+  {
     ROS_ERROR("FAILED TO CLEAR ALL ALARMS STATE");
+    return false;
+  }
+  return false;
 }
 
 }  // namespace dobot_m1
