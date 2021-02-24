@@ -221,25 +221,6 @@ void DobotM1::Homing()
   return;
 }
 
-bool DobotM1::CheckConnection_(uint8_t status)
-{
-  switch (status)
-  {
-    case dobot_api::DobotConnect_NoError:
-      return true;
-    case dobot_api::DobotConnect_NotFound:
-      ROS_ERROR("Dobot Connect Not Found");
-      break;
-    case dobot_api::DobotConnect_Occupied:
-      ROS_ERROR("Dobot Connect Occupied");
-      break;
-    default:
-      ROS_ERROR("Unexpected Return");
-      break;
-  }
-  return false;
-}
-
 float DobotM1::CheckVelocity_(float vel)
 {
   if (vel < MIN_VEL)

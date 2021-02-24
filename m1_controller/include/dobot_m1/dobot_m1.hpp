@@ -60,12 +60,8 @@ private:
 
   std::string port_;
 
-  bool CheckConnection_(uint8_t status);
-  bool CheckCommunication_(uint8_t status, std::string process_name);
   float CheckVelocity_(float vel);
   float CheckAcceleration_(float acc);
   void CheckAlarm_();
-  bool AssertAlarm_();
-  void LogAlarm_(dobot_api::alarmState alarmstate);
 };
 }  // namespace dobot_m1
