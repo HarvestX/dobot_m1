@@ -22,27 +22,58 @@ void SetCmdTimeout(const uint32_t timeout)
   return;
 }
 
-bool TrySetCmdTimeout(const uint32_t timeout) {
+bool TrySetCmdTimeout(const uint32_t timeout)
+{
   const uint8_t status = dobot_api::SetCmdTimeout(timeout);
   return CheckCommunication(status);
 }
 
-void SetQueuedCmdClear() {
+void SetQueuedCmdClear()
+{
   const uint8_t status = dobot_api::SetQueuedCmdClear();
   CheckCommunicationWithException("SetQueuedCmdClear", status);
   return;
 }
 
-bool TrySetQueuedCmdClear() {
+bool TrySetQueuedCmdClear()
+{
   const uint8_t status = dobot_api::SetQueuedCmdClear();
   return CheckCommunication(status);
 }
 
-void CheckCommunicationWithException(const std::string &called_from, const uint8_t status) {
-  if(!CheckCommunication(status)) {
+void ClearAllAlarmsState()
+{
+  const uint8_t status = dobot_api::ClearAllAlarmsState();
+  CheckCommunicationWithException("ClearAllAlarmsState", status);
+  return;
+}
+
+bool TryClearAllAlarmsState()
+{
+  const uint8_t status = dobot_api::ClearAllAlarmsState();
+  return CheckCommunication(status);
+}
+
+void SetQueuedCmdStartExec()
+{
+  const uint8_t status = dobot_api::SetQueuedCmdStartExec();
+  CheckCommunicationWithException("SetQUeuedCmdStartExec", status);
+  return;
+}
+
+bool TrySetQueuedCmdStartExec()
+{
+  const uint8_t status = dobot_api::SetQueuedCmdStartExec();
+  return CheckCommunication(status);
+}
+
+void CheckCommunicationWithException(const std::string &called_from, const uint8_t status)
+{
+  if (!CheckCommunication(status))
+  {
     std::string str;
     CommunicationStatus2String(status, str);
-    throw std::runtime_error(called_from+":"+str);
+    throw std::runtime_error(called_from + ":" + str);
   }
   return;
 }
@@ -75,11 +106,13 @@ void CommunicationStatus2String(const uint8_t status, std::string &str)
   return;
 }
 
-void CheckConnectionWithException(const std::string &called_from , const uint8_t status) {
-  if(!CheckConnection(status)) {
+void CheckConnectionWithException(const std::string &called_from, const uint8_t status)
+{
+  if (!CheckConnection(status))
+  {
     std::string str;
     ConnectionStatus2String(status, str);
-    throw std::runtime_error(called_from+":"+str);
+    throw std::runtime_error(called_from + ":" + str);
   }
   return;
 }

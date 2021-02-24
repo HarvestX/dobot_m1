@@ -22,30 +22,10 @@ namespace dobot_m1
   void DobotM1::InitDobot()
   {
     dobot_m1_interface::ConnectDobot(DobotM1::port_,  115200);
-    ConnectDobot();
-
-    // set timeout
-
-    // set timeout
     uint32_t timeout = 50;
     dobot_m1_interface::SetCmdTimeout(timeout);
     dobot_m1_interface::SetQueuedCmdClear();
-
-    // clean queue
-    while (!CheckCommunication_(dobot_api::SetQueuedCmdClear(), "Queue Clear"))
-    {
-    }
-
-    while (!CheckCommunication_(dobot_api::ClearAllAlarmsState(),
-                                "Clear All Alarm"))
-    {
-    }
-
-    while (!CheckCommunication_(dobot_api::SetQueuedCmdStartExec(),
-                                "Start Queue"))
-    {
-    }
-
+    dobot_m1_interface::ClearAllAlarmsState();
     return;
   }
 

@@ -11,20 +11,26 @@ namespace dobot_api
 
 namespace dobot_m1_interface
 {
-void ConnectDobot(const std::string &port_name, uint32_t baudrate) throw(std::runtime_error);
+void ConnectDobot(const std::string &port_name, uint32_t baudrate);
 bool TryConnectDobot(const std::string &port_name, uint32_t baudrate);
 
-void SetCmdTimeout(const uint32_t timeout) throw(std::runtime_error);
+void SetCmdTimeout(const uint32_t timeout);
 bool TrySetCmdTimeout(const uint32_t timeout);
 
-void SetQueuedCmdClear() throw(std::runtime_error);
+void SetQueuedCmdClear();
 bool TrySetQueuedCmdClear();
 
-void CheckConnectionWithException(const std::string &called_from, const uint8_t status) throw(std::runtime_error);
+void ClearAllAlarmsState();
+bool TryClearAllAlarmsState();
+
+void SetQueuedCmdStartExec();
+bool TrySetQueuedCmdStartExec();
+
+void CheckConnectionWithException(const std::string &called_from, const uint8_t status);
 bool CheckConnection(const uint8_t status);
 void ConnectionStatus2String(const uint8_t status, std::string &str);
 
-void CheckCommunication(const std::string &called_from, const uint8_t status) throw(std::runtime_error);
+void CheckCommunicationWithException(const std::string &called_from, const uint8_t status);
 bool CheckCommunication(const uint8_t status);
 void CommunicationStatus2String(const uint8_t status, std::string &str);
 
