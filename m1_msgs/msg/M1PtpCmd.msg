@@ -16,7 +16,3 @@ float32 x
 float32 y
 float32 z
 float32 r
-
-# velocity and acceleration ()
-float32 vel
-float32 acc

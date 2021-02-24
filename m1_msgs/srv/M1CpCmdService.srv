@@ -1,0 +1,3 @@
+m1_msgs/M1CpCmd m1_cp_cmd
+---
+std_msgs/Bool status

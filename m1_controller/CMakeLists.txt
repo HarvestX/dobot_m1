@@ -48,6 +48,10 @@ target_link_directories(m1_controller
     lib/DobotDll_x64
 )
 
+add_dependencies(m1_controller
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
 
 # m1_homing
 add_executable(
@@ -78,4 +82,9 @@ target_link_libraries(m1_homing
 target_link_directories(m1_homing
   PUBLIC
     lib/DobotDll_x64
+)
+
+add_dependencies(m1_homing
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
 )

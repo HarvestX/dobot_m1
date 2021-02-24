@@ -1,10 +1,13 @@
 #pragma once
 
-#include <m1_msgs/M1Cp.h>
-#include <m1_msgs/M1CpService.h>
-#include <m1_msgs/M1Jog.h>
-#include <m1_msgs/M1Ptp.h>
-#include <m1_msgs/M1PtpService.h>
+#include <m1_msgs/M1CpCmd.h>
+#include <m1_msgs/M1CpParams.h>
+#include <m1_msgs/M1CpCmdService.h>
+#include <m1_msgs/M1JogCmd.h>
+#include <m1_msgs/M1JogParams.h>
+#include <m1_msgs/M1PtpCmd.h>
+#include <m1_msgs/M1PtpParams.h>
+#include <m1_msgs/M1PtpCmdService.h>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 
@@ -34,12 +37,15 @@ private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
 
-  ros::Subscriber ptp_sub_;
-  ros::Subscriber cp_sub_;
-  ros::Subscriber jog_sub_;
-  void PtpCallback_(const m1_msgs::M1Ptp &msg);
-  void CpCallback_(const m1_msgs::M1Cp &msg);
-  void JogCallback_(const m1_msgs::M1Jog &msg);
+  ros::Subscriber ptp_cmd_sub_;
+  ros::Subscriber cp_cmd_sub_;
+  ros::Subscriber jog_cmd_sub_;
+  void PtpCmdCallback_(const m1_msgs::M1PtpCmd &msg);
+  void PtpParamsCallback_(const m1_msgs::M1PtpParams &msg);
+  void CpCmdCallback_(const m1_msgs::M1CpCmd &msg);
+  void CpParamsCallback_(const m1_msgs::M1CpParams &msg);
+  void JogCmdCallback_(const m1_msgs::M1JogCmd &msg);
+  void JogParamsCallback_(const m1_msgs::M1JogParams &msg);
 
   // timer publisher for joint state
   ros::Timer timer_;
@@ -49,8 +55,8 @@ private:
   // services
   ros::ServiceServer ptp_service_;
   ros::ServiceServer cp_service_;
-  bool PtpServiceCallback_(m1_msgs::M1PtpServiceRequest &req, m1_msgs::M1PtpServiceResponse &res);
-  bool CpServiceCallback_(m1_msgs::M1CpServiceRequest &req, m1_msgs::M1CpServiceResponse &res);
+  bool PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_msgs::M1PtpCmdServiceResponse &res);
+  bool CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs::M1CpCmdServiceResponse &res);
 
   std::string port_;
 

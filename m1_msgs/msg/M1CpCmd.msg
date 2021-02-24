@@ -7,7 +7,3 @@ uint8 cpMode
 float32 x
 float32 y
 float32 z
-
-# velocity and acceleration
-float32 vel
-float32 acc

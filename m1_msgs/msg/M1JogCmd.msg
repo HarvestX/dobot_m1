@@ -16,7 +16,3 @@ uint8 isJoint
 ##  9: L+
 ## 10: L-
 uint8 jogCmd
-
-# velocity and acceleration
-float32 vel
-float32 acc
