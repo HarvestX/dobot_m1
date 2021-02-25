@@ -299,7 +299,6 @@ void DobotM1::Homing()
   dobot_m1_interface::SetQueuedCmdStartExec();
 
   uint64_t last_index;
-  uint64_t current_index;
   uint8_t status;
 
   status = dobot_api::SetHOMEWithSwitch(0, true, &last_index);
