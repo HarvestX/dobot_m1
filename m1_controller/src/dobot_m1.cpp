@@ -119,18 +119,18 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
 
   // Start session with dobot
   status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, true, nullptr);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
   if (dobot_m1_interface::CheckCommunication(status))
   {
+    dobot_m1_interface::CommunicationStatus2String(status, str);
     ROS_ERROR("%s", str.c_str());
     res.status.data = false;
     return false;
   }
 
   dobot_api::SetPTPCmd(&cmd, true, &last_index);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
   if (dobot_m1_interface::CheckCommunication(status))
   {
+    dobot_m1_interface::CommunicationStatus2String(status, str);
     ROS_ERROR("%s", str.c_str());
     res.status.data = false;
     return false;
