@@ -26,6 +26,12 @@ bool TryClearAllAlarmsState();
 void SetQueuedCmdStartExec();
 bool TrySetQueuedCmdStartExec();
 
+void SetArmOrientationRight();
+bool TrySetArmOrientationRight();
+
+void SetArmOrientationLeft();
+bool TrySetArmOrientationLeft();
+
 void SetPtpCmd(uint8_t mode, float x, float y, float z, float r);
 bool TrySetPtpCmd(uint8_t mode, float x, float y, float z, float r);
 

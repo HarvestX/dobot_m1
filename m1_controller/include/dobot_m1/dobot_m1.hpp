@@ -33,6 +33,12 @@ public:
   void InitDobot();
   void Homing();
 
+  void PtpCmd(uint8_t mode, float x, float y, float z, float r);
+  bool TryPtpCmd(uint8_t mode, float x, float y, float z, float r);
+
+  void CpCmd(uint8_t mode, float x, float y, float z);
+  bool TryCpCmd(uint8_t mode, float x, float y, float z);
+
 private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;

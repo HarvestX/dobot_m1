@@ -67,6 +67,29 @@ bool TrySetQueuedCmdStartExec()
   return CheckCommunication(status);
 }
 
+void SetArmOrientationRight()
+{
+  uint8_t status = dobot_api::SetArmOrientation(dobot_api::RightyArmOrientation, false, nullptr);
+  CheckCommunicationWithException("SetArmOrientationRight", status);
+}
+
+bool TrySetArmOrientationRight()
+{
+  uint8_t status = dobot_api::SetArmOrientation(dobot_api::RightyArmOrientation, false, nullptr);
+  return CheckCommunication(status);
+}
+
+void SetArmOrientationLeft()
+{
+  uint8_t status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, false, nullptr);
+  CheckCommunicationWithException("SetArmOrientationLeft", status);
+}
+
+bool TrySetArmOrientationLeft(){
+  uint8_t status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, false, nullptr);
+  return CheckCommunication(status);
+}
+
 void SetPtpCmd(uint8_t mode, float x, float y, float z, float r)
 {
   dobot_api::PTPCmd cmd;

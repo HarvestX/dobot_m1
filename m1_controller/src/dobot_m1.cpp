@@ -55,27 +55,31 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
   joint_pub_.publish(joint_msg);
 }
 
+void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r)
+{
+  dobot_m1_interface::SetArmOrientationLeft();
+  dobot_m1_interface::SetPtpCmd(mode, x, y, z, r);
+  DobotM1::CheckAlarm_();
+}
+
+bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r)
+{
+  if (!dobot_m1_interface::TrySetArmOrientationLeft())
+  {
+    ROS_ERROR("FAILED TO SET ARM ORIENTATION");
+    return false;
+  }
+  if (!dobot_m1_interface::TrySetPtpCmd(mode, x, y, z, r))
+  {
+    ROS_ERROR("FAILED TO SET PTP CMD");
+    return false;
+  }
+  return DobotM1::TryCheckAlarm_();
+}
+
 void DobotM1::PtpCmdCallback_(const m1_msgs::M1PtpCmd &msg)
 {
-  dobot_api::PTPCmd cmd;
-  cmd.ptpMode = msg.ptpMode;
-  cmd.x = msg.x;
-  cmd.y = msg.y;
-  cmd.z = msg.z;
-  cmd.r = msg.r;
-
-  uint8_t status;
-  std::string str;
-
-  // Start session with dobot
-  status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, false, nullptr);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
-  if (dobot_m1_interface::CheckCommunication(status))
-    ROS_ERROR("%s", str.c_str());
-
-  dobot_m1_interface::TrySetPtpCmd(msg.ptpMode, msg.x, msg.y, msg.z, msg.r);
-
-  DobotM1::TryCheckAlarm_();
+  DobotM1::TryPtpCmd(msg.ptpMode, msg.x, msg.y, msg.z, msg.r);
 }
 
 void DobotM1::PtpParamsCallback_(const m1_msgs::M1PtpParams &msg)
@@ -116,7 +120,8 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
   // Start session with dobot
   status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, true, nullptr);
   dobot_m1_interface::CommunicationStatus2String(status, str);
-  if (dobot_m1_interface::CheckCommunication(status)) {
+  if (dobot_m1_interface::CheckCommunication(status))
+  {
     ROS_ERROR("%s", str.c_str());
     res.status.data = false;
     return false;
@@ -124,7 +129,8 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
 
   dobot_api::SetPTPCmd(&cmd, true, &last_index);
   dobot_m1_interface::CommunicationStatus2String(status, str);
-  if (dobot_m1_interface::CheckCommunication(status)) {
+  if (dobot_m1_interface::CheckCommunication(status))
+  {
     ROS_ERROR("%s", str.c_str());
     res.status.data = false;
     return false;
@@ -149,28 +155,31 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
   return true;
 }
 
+void DobotM1::CpCmd(uint8_t mode, float x, float y, float z)
+{
+  dobot_m1_interface::SetArmOrientationRight();
+  dobot_m1_interface::SetCpCmd(mode, x, y, z);
+  DobotM1::CheckAlarm_();
+}
+
+bool DobotM1::TryCpCmd(uint8_t mode, float x, float y, float z)
+{
+  if (!dobot_m1_interface::TrySetArmOrientationRight())
+  {
+    ROS_ERROR("FAILED TO SET ARM ORIENTATION");
+    return false;
+  }
+  if (!dobot_m1_interface::TrySetCpCmd(mode, x, y, z))
+  {
+    ROS_ERROR("FAILED TO SET CP CMD");
+    return false;
+  }
+  return DobotM1::TryCheckAlarm_();
+}
+
 void DobotM1::CpCmdCallback_(const m1_msgs::M1CpCmd &msg)
 {
-  dobot_api::CPCmd cmd;
-  cmd.cpMode = msg.cpMode;
-  cmd.x = msg.x;
-  cmd.y = msg.y;
-  cmd.z = msg.z;
-
-  // Start session with dobot
-  uint8_t status;
-  std::string str;
-
-  // Cp command only works on RightyArmOrientation
-  // Set Arm Orientation
-  status = dobot_api::SetArmOrientation(dobot_api::RightyArmOrientation, false, nullptr);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
-  if (!dobot_m1_interface::CheckCommunication(status))
-    ROS_ERROR("%s", str.c_str());
-
-  // Set Cp Cmd
-  dobot_m1_interface::TrySetCpCmd(msg.cpMode, msg.x, msg.y, msg.z);
-  DobotM1::TryCheckAlarm_();
+  DobotM1::TryCpCmd(msg.cpMode, msg.x, msg.y, msg.z);
 }
 
 void DobotM1::CpParamsCallback_(const m1_msgs::M1CpParams &msg)
@@ -341,9 +350,9 @@ void DobotM1::CheckAlarm_()
     return;
   std::string str;
   dobot_m1_interface::AlarmCode2String(code, str);
-  ROS_ERROR("%s", str.c_str());
   dobot_m1_interface::SetQueuedCmdClear();
   dobot_m1_interface::ClearAllAlarmsState();
+  throw std::runtime_error(str);
 }
 
 bool DobotM1::TryCheckAlarm_()
