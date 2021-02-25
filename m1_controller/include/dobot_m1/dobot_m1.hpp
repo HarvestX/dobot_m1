@@ -59,8 +59,8 @@ private:
   void TimerCallback_(const ros::TimerEvent &);
 
   // services
-  ros::ServiceServer ptp_service_;
-  ros::ServiceServer cp_service_;
+  ros::ServiceServer ptp_cmd_service_;
+  ros::ServiceServer cp_cmd_service_;
   bool PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_msgs::M1PtpCmdServiceResponse &res);
   bool CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs::M1CpCmdServiceResponse &res);
 

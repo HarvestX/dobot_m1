@@ -13,8 +13,8 @@ DobotM1::DobotM1() : nh_(), pnh_("~")
   ptp_cmd_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::PtpCmdCallback_, this);
   cp_cmd_sub_ = nh_.subscribe("cp_cmd", 1, &DobotM1::CpCmdCallback_, this);
   jog_cmd_sub_ = nh_.subscribe("jog_cmd", 1, &DobotM1::JogCmdCallback_, this);
-  ptp_service_ = nh_.advertiseService("ptp_service", &DobotM1::PtpCmdServiceCallback_, this);
-  cp_service_ = nh_.advertiseService("cp_service", &DobotM1::CpCmdServiceCallback_, this);
+  ptp_cmd_service_ = nh_.advertiseService("ptp_cmd_service", &DobotM1::PtpCmdServiceCallback_, this);
+  cp_cmd_service_ = nh_.advertiseService("cp_cmd_service", &DobotM1::CpCmdServiceCallback_, this);
 }
 
 DobotM1::~DobotM1()
