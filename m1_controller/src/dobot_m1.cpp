@@ -73,10 +73,7 @@ void DobotM1::PtpCmdCallback_(const m1_msgs::M1PtpCmd &msg)
   if (dobot_m1_interface::CheckCommunication(status))
     ROS_ERROR("%s", str.c_str());
 
-  dobot_api::SetPTPCmd(&cmd, false, nullptr);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
-  if (dobot_m1_interface::CheckCommunication(status))
-    ROS_ERROR("%s", str.c_str());
+  dobot_m1_interface::TrySetPtpCmd(msg.ptpMode, msg.x, msg.y, msg.z, msg.r);
 
   DobotM1::TryCheckAlarm_();
 }

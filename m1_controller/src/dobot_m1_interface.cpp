@@ -67,6 +67,36 @@ bool TrySetQueuedCmdStartExec()
   return CheckCommunication(status);
 }
 
+void SetPtpCmd(uint8_t mode, float x, float y, float z, float r)
+{
+  dobot_api::PTPCmd cmd;
+  cmd.ptpMode = mode;
+  cmd.x = x;
+  cmd.y = y;
+  cmd.z = z;
+  cmd.r = r;
+
+  uint8_t status;
+
+  status = dobot_api::SetPTPCmd(&cmd, false, nullptr);
+  CheckCommunicationWithException("SetPTPCmd", status);
+}
+
+bool TrySetPtpCmd(uint8_t mode, float x, float y, float z, float r)
+{
+  dobot_api::PTPCmd cmd;
+  cmd.ptpMode = mode;
+  cmd.x = x;
+  cmd.y = y;
+  cmd.z = z;
+  cmd.r = r;
+
+  uint8_t status;
+
+  status = dobot_api::SetPTPCmd(&cmd, false, nullptr);
+  return CheckCommunication(status);
+}
+
 void WaitQueuedCmd(const uint64_t last_index)
 {
   uint64_t current_index;
