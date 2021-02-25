@@ -102,7 +102,7 @@ namespace dobot_m1
       // publish command
       current_jog_params_msg_ = target_jog_params_msg;
 
-      jog_cmd_pub_.publish(target_jog_params_msg);
+      jog_params_pub_.publish(target_jog_params_msg);
     }
 
     // cmd
