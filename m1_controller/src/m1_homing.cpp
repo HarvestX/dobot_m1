@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   }
   catch (const std::exception &e)
   {
-    ROS_ERROR("%s", e.what());
+    std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }
 }
