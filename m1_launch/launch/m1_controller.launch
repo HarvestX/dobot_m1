@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="joy" default="false"/>
+  <arg name="joy" default="true"/>
   <arg name="isJoint" default="true"/>
   <arg name="output" default="log"/>
 
