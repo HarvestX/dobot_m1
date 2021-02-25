@@ -29,6 +29,9 @@ bool TrySetQueuedCmdStartExec();
 void SetPtpCmd(uint8_t mode, float x, float y, float z, float r);
 bool TrySetPtpCmd(uint8_t mode, float x, float y, float z, float r);
 
+void SetCpCmd(uint8_t mode, float x, float y, float z);
+bool TrySetCpCmd(uint8_t mode, float x, float y , float z);
+
 void WaitQueuedCmd(const uint64_t last_index);
 bool TryWaitQueuedCmd(const uint64_t last_index);
 

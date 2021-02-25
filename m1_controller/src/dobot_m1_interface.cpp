@@ -76,9 +76,7 @@ void SetPtpCmd(uint8_t mode, float x, float y, float z, float r)
   cmd.z = z;
   cmd.r = r;
 
-  uint8_t status;
-
-  status = dobot_api::SetPTPCmd(&cmd, false, nullptr);
+  uint8_t status = dobot_api::SetPTPCmd(&cmd, false, nullptr);
   CheckCommunicationWithException("SetPTPCmd", status);
 }
 
@@ -91,9 +89,32 @@ bool TrySetPtpCmd(uint8_t mode, float x, float y, float z, float r)
   cmd.z = z;
   cmd.r = r;
 
-  uint8_t status;
+  uint8_t status = dobot_api::SetPTPCmd(&cmd, false, nullptr);
+  return CheckCommunication(status);
+}
 
-  status = dobot_api::SetPTPCmd(&cmd, false, nullptr);
+void SetCpCmd(uint8_t mode, float x, float y, float z)
+{
+  dobot_api::CPCmd cmd;
+  cmd.cpMode = mode;
+  cmd.x = x;
+  cmd.y = y;
+  cmd.z = z;
+
+  uint8_t status;
+  status = dobot_api::SetCPCmd(&cmd, false, nullptr);
+  CheckCommunicationWithException("SetCPcmd", status);
+}
+
+bool TrySetCpCmd(uint8_t mode, float x, float y, float z)
+{
+  dobot_api::CPCmd cmd;
+  cmd.cpMode = mode;
+  cmd.x = x;
+  cmd.y = y;
+  cmd.z = z;
+
+  uint8_t status = dobot_api::SetCPCmd(&cmd, false, nullptr);
   return CheckCommunication(status);
 }
 

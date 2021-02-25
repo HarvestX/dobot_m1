@@ -169,11 +169,7 @@ void DobotM1::CpCmdCallback_(const m1_msgs::M1CpCmd &msg)
     ROS_ERROR("%s", str.c_str());
 
   // Set Cp Cmd
-  status = dobot_api::SetCPCmd(&cmd, false, nullptr);
-  dobot_m1_interface::CommunicationStatus2String(status, str);
-  if (!dobot_m1_interface::CheckCommunication(status))
-    ROS_ERROR("%s", str.c_str());
-
+  dobot_m1_interface::TrySetCpCmd(msg.cpMode, msg.x, msg.y, msg.z);
   DobotM1::TryCheckAlarm_();
 }
 
