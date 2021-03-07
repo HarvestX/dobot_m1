@@ -20,7 +20,7 @@ include_directories(
   include/m1_validator
 )
 
-# m1_homing
+# m1_validator
 add_executable(
   m1_validator src/m1_validator.cpp
 )
