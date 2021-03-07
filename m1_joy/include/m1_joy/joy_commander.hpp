@@ -1,3 +1,5 @@
+#pragma once
+
 #include <algorithm>
 #include <m1_msgs/M1JogCmd.h>
 #include <m1_msgs/M1JogParams.h>

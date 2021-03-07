@@ -29,7 +29,16 @@ include_directories(
 
 add_executable(
   m1_joy_commander
-  src/joy_commander.cpp
+)
+
+target_sources(m1_joy_commander
+  PUBLIC
+    src/joy_commander.cpp
+)
+
+target_include_directories(m1_joy_commander
+  PUBLIC
+    include/m1_joy
 )
 
 add_dependencies(
