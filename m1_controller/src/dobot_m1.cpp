@@ -57,17 +57,33 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
 
 void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r)
 {
-  dobot_m1_interface::SetArmOrientationLeft();
+  if (y > 0.0)
+  {
+    dobot_m1_interface::SetArmOrientationRight();
+  }
+  else
+  {
+    dobot_m1_interface::SetArmOrientationLeft();
+  }
   dobot_m1_interface::SetPtpCmd(mode, x, y, z, r);
   DobotM1::CheckAlarm_();
 }
 
 bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r)
 {
-  if (!dobot_m1_interface::TrySetArmOrientationLeft())
+  if (y > 0.0)
   {
-    ROS_ERROR("FAILED TO SET ARM ORIENTATION");
-    return false;
+    if (!dobot_m1_interface::TrySetArmOrientationLeft())
+    {
+      ROS_ERROR("FAILED TO SET ARM ORIENTATION");
+      return false;
+    }
+  } else {
+    if (!dobot_m1_interface::TrySetArmOrientationRight())
+    {
+      ROS_ERROR("FAILED TO SET ARM ORIENTATION");
+      return false;
+    }
   }
   if (!dobot_m1_interface::TrySetPtpCmd(mode, x, y, z, r))
   {
@@ -118,7 +134,12 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
   std::string str;
 
   // Start session with dobot
-  status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, true, nullptr);
+  if (cmd.y > 0.0) {
+    status = dobot_api::SetArmOrientation(dobot_api::RightyArmOrientation, true, nullptr);
+  } else {
+    status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, true, nullptr);
+  }
+
   if (!dobot_m1_interface::CheckCommunication(status))
   {
     dobot_m1_interface::CommunicationStatus2String(status, str);
