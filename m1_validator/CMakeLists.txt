@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.13.0)
 project(m1_validator)
 
 add_compile_options(-std=c++11)
@@ -17,12 +17,16 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  include/m1_validator
 )
 
 # m1_validator
 add_executable(
   m1_validator src/m1_validator.cpp
+)
+
+target_include_directories(m1_validator
+  PUBLIC
+    include/m1_validator
 )
 
 add_dependencies(

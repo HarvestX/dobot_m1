@@ -1,13 +1,13 @@
 #pragma once
 
 #include <m1_msgs/M1CpCmd.h>
-#include <m1_msgs/M1CpParams.h>
 #include <m1_msgs/M1CpCmdService.h>
+#include <m1_msgs/M1CpParams.h>
 #include <m1_msgs/M1JogCmd.h>
 #include <m1_msgs/M1JogParams.h>
 #include <m1_msgs/M1PtpCmd.h>
-#include <m1_msgs/M1PtpParams.h>
 #include <m1_msgs/M1PtpCmdService.h>
+#include <m1_msgs/M1PtpParams.h>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 
