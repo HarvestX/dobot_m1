@@ -43,6 +43,6 @@ target_link_libraries(
 # for test
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  catkin_add_gtest(utest_node test/utest_launch.test src/test/utest.cpp)
+  add_rostest_gtest(utest_node test/utest_launch.test src/test/utest.cpp)
   target_link_libraries(utest_node ${catkin_LIBRARIES})
 endif()

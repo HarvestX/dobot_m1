@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-  <node name="m1_validator" pkg="m1_validator" type="m1_validator" output="screen"/>
+  <node name="fake_validator" pkg="m1_validator" type="m1_validator" output="screen"/>
   <test test-name="unit_test_node" pkg="m1_validator" type="utest_node" time-limit="1.0"/>
 </launch>
