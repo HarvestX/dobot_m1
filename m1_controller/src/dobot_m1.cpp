@@ -355,6 +355,9 @@ bool DobotM1::JointCmdServiceCallback_(m1_msgs::M1JointCmdServiceRequest &req, m
     const float diff = req.m1_joint_cmd.degree - angle;
     if (std::abs(diff) < dobot_m1_interface::ANGLE_EPSILON)
     {
+      jog_cmd.isJoint = true;
+      jog_cmd.cmd = dobot_api::JogIdle;
+      dobot_api::SetJOGCmd(&jog_cmd, true, nullptr);
       break;
     }
 

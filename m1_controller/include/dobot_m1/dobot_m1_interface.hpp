@@ -18,7 +18,7 @@ enum {
 };
 
 
-const float ANGLE_EPSILON = 0.001;
+const float ANGLE_EPSILON = 0.5;
 
 const float DOBOT_REAR_JOINT_SOFTWARE_LIMIT = 135.0;
 const float DOBOT_REAR_JOINT_HARDWARE_LIMIT = 140.0;
