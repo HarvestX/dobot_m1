@@ -11,8 +11,11 @@ DobotM1::DobotM1() : nh_(), pnh_("~")
   DobotM1::joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 10);
   DobotM1::timer_ = nh_.createTimer(ros::Duration(1), &DobotM1::TimerCallback_, this);
   DobotM1::ptp_cmd_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::PtpCmdCallback_, this);
+  DobotM1::ptp_param_sub_ = nh_.subscribe("ptp_param", 1, &DobotM1::PtpParamsCallback_, this);
   DobotM1::cp_cmd_sub_ = nh_.subscribe("cp_cmd", 1, &DobotM1::CpCmdCallback_, this);
+  DobotM1::cp_param_sub_ = nh_.subscribe("cp_param", 1, &DobotM1::CpParamsCallback_, this);
   DobotM1::jog_cmd_sub_ = nh_.subscribe("jog_cmd", 1, &DobotM1::JogCmdCallback_, this);
+  DobotM1::jog_param_sub_ = nh_.subscribe("jog_param", 1, &DobotM1::JogParamsCallback_, this);
   DobotM1::ptp_cmd_service_ = nh_.advertiseService("ptp_cmd_service", &DobotM1::PtpCmdServiceCallback_, this);
   DobotM1::cp_cmd_service_ = nh_.advertiseService("cp_cmd_service", &DobotM1::CpCmdServiceCallback_, this);
   DobotM1::joint_cmd_service_ = nh_.advertiseService("joint_cmd_service", &DobotM1::JointCmdServiceCallback_, this);
@@ -384,6 +387,8 @@ bool DobotM1::JointCmdServiceCallback_(m1_msgs::M1JointCmdServiceRequest &req, m
       return false;
     }
   }
+  res.status.data = true;
+  return true;
 }
 
 void DobotM1::Homing()

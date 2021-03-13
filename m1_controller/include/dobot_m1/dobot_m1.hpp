@@ -46,8 +46,11 @@ private:
   ros::NodeHandle pnh_;
 
   ros::Subscriber ptp_cmd_sub_;
+  ros::Subscriber ptp_param_sub_;
   ros::Subscriber cp_cmd_sub_;
+  ros::Subscriber cp_param_sub_;
   ros::Subscriber jog_cmd_sub_;
+  ros::Subscriber jog_param_sub_;
   void PtpCmdCallback_(const m1_msgs::M1PtpCmd &msg);
   void PtpParamsCallback_(const m1_msgs::M1PtpParams &msg);
   void CpCmdCallback_(const m1_msgs::M1CpCmd &msg);
