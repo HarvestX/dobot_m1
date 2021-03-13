@@ -4,17 +4,18 @@ namespace dobot_m1
 {
 DobotM1::DobotM1() : nh_(), pnh_("~")
 {
-  pnh_.param<std::string>("port", port_, "192.168.100.159");
+  DobotM1::pnh_.param<std::string>("port", port_, "192.168.100.159");
 
   InitDobot();
 
-  joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 10);
-  timer_ = nh_.createTimer(ros::Duration(1), &DobotM1::TimerCallback_, this);
-  ptp_cmd_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::PtpCmdCallback_, this);
-  cp_cmd_sub_ = nh_.subscribe("cp_cmd", 1, &DobotM1::CpCmdCallback_, this);
-  jog_cmd_sub_ = nh_.subscribe("jog_cmd", 1, &DobotM1::JogCmdCallback_, this);
-  ptp_cmd_service_ = nh_.advertiseService("ptp_cmd_service", &DobotM1::PtpCmdServiceCallback_, this);
-  cp_cmd_service_ = nh_.advertiseService("cp_cmd_service", &DobotM1::CpCmdServiceCallback_, this);
+  DobotM1::joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 10);
+  DobotM1::timer_ = nh_.createTimer(ros::Duration(1), &DobotM1::TimerCallback_, this);
+  DobotM1::ptp_cmd_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::PtpCmdCallback_, this);
+  DobotM1::cp_cmd_sub_ = nh_.subscribe("cp_cmd", 1, &DobotM1::CpCmdCallback_, this);
+  DobotM1::jog_cmd_sub_ = nh_.subscribe("jog_cmd", 1, &DobotM1::JogCmdCallback_, this);
+  DobotM1::ptp_cmd_service_ = nh_.advertiseService("ptp_cmd_service", &DobotM1::PtpCmdServiceCallback_, this);
+  DobotM1::cp_cmd_service_ = nh_.advertiseService("cp_cmd_service", &DobotM1::CpCmdServiceCallback_, this);
+  DobotM1::joint_cmd_service_ = nh_.advertiseService("joint_cmd_service", &DobotM1::JointCmdServiceCallback_, this);
 }
 
 DobotM1::~DobotM1()
@@ -300,6 +301,86 @@ void DobotM1::JogParamsCallback_(const m1_msgs::M1JogParams &msg)
     ROS_ERROR("%s", str.c_str());
   }
   DobotM1::TryCheckAlarm_();
+}
+
+bool DobotM1::JointCmdServiceCallback_(m1_msgs::M1JointCmdServiceRequest &req, m1_msgs::M1JointCmdServiceResponse &res)
+{
+  bool is_in_valid_range = false;
+  uint8_t joint_idx;
+  uint8_t positive_rotation_cmd;
+  uint8_t negative_rotation_cmd;
+  switch (req.m1_joint_cmd.jogCmd)
+  {
+    case dobot_m1_interface::REAR:
+      is_in_valid_range = (std::abs(req.m1_joint_cmd.degree) < dobot_m1_interface::DOBOT_REAR_JOINT_HARDWARE_LIMIT);
+      joint_idx = 0;
+      positive_rotation_cmd = dobot_api::JogAPPressed;
+      negative_rotation_cmd = dobot_api::JogANPressed;
+      break;
+    case dobot_m1_interface::FRONT:  // Fore arm rotate negative
+      is_in_valid_range = (std::abs(req.m1_joint_cmd.degree) < dobot_m1_interface::DOBOT_FORE_JOINT_HARDWARE_LIMIT);
+      joint_idx = 1;
+      positive_rotation_cmd = dobot_api::JogBPPressed;
+      negative_rotation_cmd = dobot_api::JogBNPressed;
+      break;
+    case dobot_m1_interface::END:
+      is_in_valid_range = true;
+      joint_idx = 3;
+      positive_rotation_cmd = dobot_api::JogDPPressed;
+      negative_rotation_cmd = dobot_api::JogDNPressed;
+      break;
+    default:
+      ROS_ERROR("invalid jogCmd");
+      res.status.data = false;
+      return false;
+  }
+
+  if (!is_in_valid_range)
+  {
+    ROS_ERROR("degree is out of range");
+    res.status.data = false;
+    return false;
+  }
+
+  while (1)
+  {
+    dobot_api::Pose pose;
+    dobot_api::JOGCmd jog_cmd;
+    uint8_t status;
+
+    status = dobot_api::GetPose(&pose);
+    if (!dobot_m1_interface::CheckCommunication(status))
+      continue;
+    const float angle = (float)pose.jointAngle[joint_idx];
+    const float diff = req.m1_joint_cmd.degree - angle;
+    if (std::abs(diff) < dobot_m1_interface::ANGLE_EPSILON)
+    {
+      break;
+    }
+
+    jog_cmd.isJoint = true;
+    if (diff > 0)
+    {
+      jog_cmd.cmd = positive_rotation_cmd;
+    }
+    else
+    {
+      jog_cmd.cmd = negative_rotation_cmd;
+    }
+
+    status = dobot_api::SetJOGCmd(&jog_cmd, false, nullptr);
+    if (!dobot_m1_interface::CheckCommunication(status))
+    {
+      std::string str;
+      dobot_m1_interface::CommunicationStatus2String(status, str);
+      ROS_ERROR("%s", str.c_str());
+    }
+    if (!DobotM1::TryCheckAlarm_())
+    {
+      res.status.data = false;
+      return false;
+    }
+  }
 }
 
 void DobotM1::Homing()

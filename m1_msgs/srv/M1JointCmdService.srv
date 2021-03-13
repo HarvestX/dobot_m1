@@ -1,0 +1,3 @@
+m1_msgs/M1JointCmd m1_joint_cmd
+---
+std_msgs/Bool status

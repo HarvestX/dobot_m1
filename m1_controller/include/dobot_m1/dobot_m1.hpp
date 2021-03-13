@@ -5,6 +5,8 @@
 #include <m1_msgs/M1CpParams.h>
 #include <m1_msgs/M1JogCmd.h>
 #include <m1_msgs/M1JogParams.h>
+#include <m1_msgs/M1JointCmd.h>
+#include <m1_msgs/M1JointCmdService.h>
 #include <m1_msgs/M1PtpCmd.h>
 #include <m1_msgs/M1PtpCmdService.h>
 #include <m1_msgs/M1PtpParams.h>
@@ -61,8 +63,10 @@ private:
   // services
   ros::ServiceServer ptp_cmd_service_;
   ros::ServiceServer cp_cmd_service_;
+  ros::ServiceServer joint_cmd_service_;
   bool PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_msgs::M1PtpCmdServiceResponse &res);
   bool CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs::M1CpCmdServiceResponse &res);
+  bool JointCmdServiceCallback_(m1_msgs::M1JointCmdServiceRequest &req, m1_msgs::M1JointCmdServiceResponse &res);
 
   std::string port_;
 

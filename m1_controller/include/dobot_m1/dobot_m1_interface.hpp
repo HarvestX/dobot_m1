@@ -11,6 +11,24 @@ namespace dobot_api
 
 namespace dobot_m1_interface
 {
+enum {
+  REAR = 1,
+  FRONT = 2,
+  END = 3,
+};
+
+
+const float ANGLE_EPSILON = 0.001;
+
+const float DOBOT_REAR_JOINT_SOFTWARE_LIMIT = 135.0;
+const float DOBOT_REAR_JOINT_HARDWARE_LIMIT = 140.0;
+
+const float DOBOT_FORE_JOINT_SOFTWARE_LIMIT = 85.0;
+const float DOBOT_FORE_JOINT_HARDWARE_LIMIT = 90.0;
+
+const float DOBOT_END_JOINT_SOFTWARE_LIMIT = 360.0;
+// END JOINT HARDWARE LIMIT is None
+
 void ConnectDobot(const std::string &port_name, uint32_t baudrate);
 bool TryConnectDobot(const std::string &port_name, uint32_t baudrate);
 

@@ -14,6 +14,7 @@ add_message_files(
   M1CpParams.msg
   M1JogCmd.msg
   M1JogParams.msg
+  M1JointCmd.msg
 )
 
 add_service_files(
@@ -22,6 +23,7 @@ add_service_files(
   M1PtpParamsService.srv
   M1CpCmdService.srv
   M1CpParamsService.srv
+  M1JointCmdService.srv
 )
 
 generate_messages(
