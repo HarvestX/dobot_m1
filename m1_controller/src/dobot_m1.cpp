@@ -33,6 +33,7 @@ void DobotM1::InitDobot()
   dobot_m1_interface::SetCmdTimeout(timeout);
   dobot_m1_interface::SetQueuedCmdClear();
   dobot_m1_interface::ClearAllAlarmsState();
+  dobot_m1_interface::SetJogParams(50.0, 50.0);
   return;
 }
 
