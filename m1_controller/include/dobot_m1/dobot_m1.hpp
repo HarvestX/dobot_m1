@@ -41,6 +41,9 @@ public:
   void CpCmd(uint8_t mode, float x, float y, float z);
   bool TryCpCmd(uint8_t mode, float x, float y, float z);
 
+  void JogParams(float vel, float acc);
+  bool TryJogParams(float vel, float acc);
+
 private:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;

@@ -56,6 +56,8 @@ bool TrySetPtpCmd(uint8_t mode, float x, float y, float z, float r);
 void SetCpCmd(uint8_t mode, float x, float y, float z);
 bool TrySetCpCmd(uint8_t mode, float x, float y , float z);
 
+void SetJogParams(float vel, float acc);
+bool TrySetJogParams(float vel, float acc);
 bool TryIdleJog();
 
 void WaitQueuedCmd(const uint64_t last_index);

@@ -268,6 +268,26 @@ bool DobotM1::CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs
   return true;
 }
 
+void DobotM1::JogParams(float vel, float acc)
+{
+  float fixed_vel = CheckVelocity_(vel);
+  float fixed_acc = CheckAcceleration_(acc);
+  dobot_m1_interface::SetJogParams(fixed_vel, fixed_acc);
+  DobotM1::CheckAlarm_();
+}
+
+bool DobotM1::TryJogParams(float vel, float acc)
+{
+  float fixed_vel = CheckVelocity_(vel);
+  float fixed_acc = CheckAcceleration_(acc);
+  if (!dobot_m1_interface::TrySetJogParams(fixed_vel, fixed_acc))
+  {
+    ROS_ERROR("FAILED TO SET JOG PARAMS");
+    return false;
+  }
+  return DobotM1::TryCheckAlarm_();
+}
+
 void DobotM1::JogCmdCallback_(const m1_msgs::M1JogCmd &msg)
 {
   dobot_api::JOGCmd cmd;
@@ -287,23 +307,7 @@ void DobotM1::JogCmdCallback_(const m1_msgs::M1JogCmd &msg)
 
 void DobotM1::JogParamsCallback_(const m1_msgs::M1JogParams &msg)
 {
-  // set velocity and acceleration
-  float vel = CheckVelocity_(msg.vel);
-  float acc = CheckAcceleration_(msg.acc);
-
-  dobot_api::JOGCommonParams jogCommonParams;
-  jogCommonParams.velocityRatio = vel;
-  jogCommonParams.accelerationRatio = acc;
-
-  uint8_t status;
-  status = dobot_api::SetJOGCommonParams(&jogCommonParams, false, nullptr);
-  if (!dobot_m1_interface::CheckCommunication(status))
-  {
-    std::string str;
-    dobot_m1_interface::CommunicationStatus2String(status, str);
-    ROS_ERROR("%s", str.c_str());
-  }
-  DobotM1::TryCheckAlarm_();
+  DobotM1::TryJogParams(msg.vel, msg.acc);
 }
 
 bool DobotM1::JointCmdServiceCallback_(m1_msgs::M1JointCmdServiceRequest &req, m1_msgs::M1JointCmdServiceResponse &res)

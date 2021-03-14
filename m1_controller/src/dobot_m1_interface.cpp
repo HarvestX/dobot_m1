@@ -142,6 +142,26 @@ bool TrySetCpCmd(uint8_t mode, float x, float y, float z)
   return CheckCommunication(status);
 }
 
+void SetJogParams(float vel, float acc)
+{
+  dobot_api::JOGCommonParams jog_params;
+  jog_params.velocityRatio = vel;
+  jog_params.accelerationRatio = acc;
+
+  uint8_t status = dobot_api::SetJOGCommonParams(&jog_params, false, nullptr);
+  CheckCommunicationWithException("SetJogCommonParams", status);
+}
+
+bool TrySetJogParams(float vel, float acc)
+{
+  dobot_api::JOGCommonParams jog_params;
+  jog_params.velocityRatio = vel;
+  jog_params.accelerationRatio = acc;
+
+  uint8_t status = dobot_api::SetJOGCommonParams(&jog_params, false, nullptr);
+  return CheckCommunication(status);
+}
+
 bool TryIdleJog()
 {
   dobot_api::JOGCmd jog_cmd;
