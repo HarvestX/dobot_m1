@@ -358,9 +358,6 @@ bool DobotM1::JointCmdServiceCallback_(m1_msgs::M1JointCmdServiceRequest &req, m
     const float diff = req.m1_joint_cmd.degree - angle;
     if (std::abs(diff) < dobot_m1_interface::ANGLE_EPSILON)
     {
-      jog_cmd.isJoint = true;
-      jog_cmd.cmd = dobot_api::JogIdle;
-      dobot_api::SetJOGCmd(&jog_cmd, true, nullptr);
       break;
     }
 
@@ -380,13 +377,12 @@ bool DobotM1::JointCmdServiceCallback_(m1_msgs::M1JointCmdServiceRequest &req, m
       std::string str;
       dobot_m1_interface::CommunicationStatus2String(status, str);
       ROS_ERROR("%s", str.c_str());
-    }
-    if (!DobotM1::TryCheckAlarm_())
-    {
+      dobot_m1_interface::TryIdleJog();
       res.status.data = false;
       return false;
     }
   }
+  dobot_m1_interface::TryIdleJog();
   res.status.data = true;
   return true;
 }

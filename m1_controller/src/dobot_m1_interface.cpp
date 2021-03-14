@@ -85,7 +85,8 @@ void SetArmOrientationLeft()
   CheckCommunicationWithException("SetArmOrientationLeft", status);
 }
 
-bool TrySetArmOrientationLeft(){
+bool TrySetArmOrientationLeft()
+{
   uint8_t status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, false, nullptr);
   return CheckCommunication(status);
 }
@@ -138,6 +139,15 @@ bool TrySetCpCmd(uint8_t mode, float x, float y, float z)
   cmd.z = z;
 
   uint8_t status = dobot_api::SetCPCmd(&cmd, false, nullptr);
+  return CheckCommunication(status);
+}
+
+bool TryIdleJog()
+{
+  dobot_api::JOGCmd jog_cmd;
+  jog_cmd.isJoint = true;
+  jog_cmd.cmd = dobot_api::JogIdle;
+  uint8_t status = dobot_api::SetJOGCmd(&jog_cmd, true, nullptr);
   return CheckCommunication(status);
 }
 
