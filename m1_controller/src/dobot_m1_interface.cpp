@@ -91,6 +91,18 @@ bool TrySetArmOrientationLeft()
   return CheckCommunication(status);
 }
 
+void SetArmOrientation(dobot_api::ArmOrientation arm_orientation)
+{
+  uint8_t status = dobot_api::SetArmOrientation(arm_orientation, false, nullptr);
+  CheckCommunicationWithException("SetArmOrientation", status);
+}
+
+bool TrySetArmOrientation(dobot_api::ArmOrientation arm_orientation)
+{
+  uint8_t status = dobot_api::SetArmOrientation(arm_orientation, false, nullptr);
+  return CheckCommunication(status);
+}
+
 void SetPtpCmd(uint8_t mode, float x, float y, float z, float r)
 {
   dobot_api::PTPCmd cmd;

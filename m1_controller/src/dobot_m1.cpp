@@ -60,23 +60,24 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
   joint_pub_.publish(joint_msg);
 }
 
-void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r)
+void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand)
 {
-  if (y > 0.0)
-  {
-    dobot_m1_interface::SetArmOrientationRight();
+  dobot_api::ArmOrientation arm_orientation = dobot_api::RightyArmOrientation;
+  if(is_lefthand) {
+    arm_orientation = dobot_api::LeftyArmOrientation;
   }
-  else
-  {
-    dobot_m1_interface::SetArmOrientationLeft();
-  }
+  dobot_m1_interface::SetArmOrientation(arm_orientation);
   dobot_m1_interface::SetPtpCmd(mode, x, y, z, r);
   DobotM1::CheckAlarm_();
 }
 
-bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r)
+bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand)
 {
-  if (!dobot_m1_interface::TrySetArmOrientationLeft())
+  dobot_api::ArmOrientation arm_orientation = dobot_api::RightyArmOrientation;
+  if(is_lefthand) {
+    arm_orientation = dobot_api::LeftyArmOrientation;
+  }
+  if (!dobot_m1_interface::TrySetArmOrientation(arm_orientation))
   {
     ROS_ERROR("FAILED TO SET ARM ORIENTATION");
     return false;
@@ -91,7 +92,7 @@ bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r)
 
 void DobotM1::PtpCmdCallback_(const m1_msgs::M1PtpCmd &msg)
 {
-  DobotM1::TryPtpCmd(msg.ptpMode, msg.x, msg.y, msg.z, msg.r);
+  DobotM1::TryPtpCmd(msg.ptpMode, msg.x, msg.y, msg.z, msg.r, msg.is_lefthand);
 }
 
 void DobotM1::PtpParamsCallback_(const m1_msgs::M1PtpParams &msg)
@@ -130,7 +131,13 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
   std::string str;
 
   // Start session with dobot
-  status = dobot_api::SetArmOrientation(dobot_api::LeftyArmOrientation, true, nullptr);
+  dobot_api::ArmOrientation arm_orientation;
+  if(req.m1_ptp_cmd.is_lefthand){
+    arm_orientation = dobot_api::LeftyArmOrientation;
+  } else {
+    arm_orientation = dobot_api::RightyArmOrientation;
+  }
+  status = dobot_api::SetArmOrientation(arm_orientation, true, nullptr);
 
   if (!dobot_m1_interface::CheckCommunication(status))
   {

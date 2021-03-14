@@ -16,3 +16,6 @@ float32 x
 float32 y
 float32 z
 float32 r
+
+# hand mode
+bool is_lefthand

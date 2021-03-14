@@ -51,6 +51,9 @@ bool TrySetArmOrientationRight();
 void SetArmOrientationLeft();
 bool TrySetArmOrientationLeft();
 
+void SetArmOrientation(dobot_api:: ArmOrientation arm_orientation);
+bool TrySetArmOrientation(dobot_api::ArmOrientation arm_orientation);
+
 void SetPtpCmd(uint8_t mode, float x, float y, float z, float r);
 bool TrySetPtpCmd(uint8_t mode, float x, float y, float z, float r);
 

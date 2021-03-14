@@ -35,8 +35,8 @@ public:
   void InitDobot();
   void Homing();
 
-  void PtpCmd(uint8_t mode, float x, float y, float z, float r);
-  bool TryPtpCmd(uint8_t mode, float x, float y, float z, float r);
+  void PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand);
+  bool TryPtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand);
 
   void CpCmd(uint8_t mode, float x, float y, float z);
   bool TryCpCmd(uint8_t mode, float x, float y, float z);
