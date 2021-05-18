@@ -1,4 +1,5 @@
 #include "dobot_m1.hpp"
+#include "m1_software_limit.hpp"
 
 namespace dobot_m1
 {
@@ -61,8 +62,15 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
 
 void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand)
 {
+  // Check Softare Limit
+  if (!m1_software_limit::isValid(mode, x, y, z, is_lefthand))
+  {
+    throw std::runtime_error("given position is out of software limit [x: %.2f, y: %.2f, z: %.2f]");
+  }
+
   dobot_api::ArmOrientation arm_orientation = dobot_api::RightyArmOrientation;
-  if(is_lefthand) {
+  if (is_lefthand)
+  {
     arm_orientation = dobot_api::LeftyArmOrientation;
   }
   dobot_m1_interface::SetArmOrientation(arm_orientation);
@@ -72,8 +80,16 @@ void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_l
 
 bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand)
 {
+  // Check Softare Limit
+  if (!m1_software_limit::isValid(mode, x, y, z, is_lefthand))
+  {
+    ROS_ERROR("Given Postion is out of software limit");
+    return false;
+  }
+
   dobot_api::ArmOrientation arm_orientation = dobot_api::RightyArmOrientation;
-  if(is_lefthand) {
+  if (is_lefthand)
+  {
     arm_orientation = dobot_api::LeftyArmOrientation;
   }
   if (!dobot_m1_interface::TrySetArmOrientation(arm_orientation))
@@ -131,9 +147,12 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
 
   // Start session with dobot
   dobot_api::ArmOrientation arm_orientation;
-  if(req.m1_ptp_cmd.is_lefthand){
+  if (req.m1_ptp_cmd.is_lefthand)
+  {
     arm_orientation = dobot_api::LeftyArmOrientation;
-  } else {
+  }
+  else
+  {
     arm_orientation = dobot_api::RightyArmOrientation;
   }
   status = dobot_api::SetArmOrientation(arm_orientation, true, nullptr);

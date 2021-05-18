@@ -12,7 +12,9 @@
         "${HOME}/catkin_ws/src/hx2/hx2_node/include/**",
         "${HOME}/catkin_ws/src/dobot_m1/m1_controller/include/**",
         "${HOME}/catkin_ws/src/dobot_m1/m1_validator/include/**",
-        "/usr/include/**"
+        "/usr/include/**",
+        "${workspaceFolder}/include/**",
+        "${workspaceFolder}/src/**"
       ],
       "name": "ROS"
     }
