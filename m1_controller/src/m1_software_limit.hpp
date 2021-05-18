@@ -4,5 +4,5 @@
 
 namespace m1_software_limit
 {
-bool isValid(uint8_t mode, float x, float y, float z, bool is_left_hand);
+bool isValid(float abs_x, float abs_y, float abs_z, bool is_left_hand);
 }  // namespace m1_software_limit

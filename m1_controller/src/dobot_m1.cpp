@@ -63,7 +63,20 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
 void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand)
 {
   // Check Softare Limit
-  if (!m1_software_limit::isValid(mode, x, y, z, is_lefthand))
+  float abs_x = x;
+  float abs_y = y;
+  float abs_z = z;
+  if (mode > 3)
+  {
+    // only check for absolute coodination
+    dobot_api::Pose pose;
+    uint8_t status = dobot_api::GetPose(&pose);
+    dobot_m1_interface::CheckCommunicationWithException("GetPose", status);
+    abs_x += (float)pose.x;
+    abs_y += (float)pose.y;
+    abs_z += (float)pose.z;
+  }
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z, is_lefthand))
   {
     throw std::runtime_error("given position is out of software limit [x: %.2f, y: %.2f, z: %.2f]");
   }
@@ -81,7 +94,23 @@ void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_l
 bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand)
 {
   // Check Softare Limit
-  if (!m1_software_limit::isValid(mode, x, y, z, is_lefthand))
+  float abs_x = x;
+  float abs_y = y;
+  float abs_z = z;
+  if (mode > 3)
+  {
+    dobot_api::Pose pose;
+    uint8_t status = dobot_api::GetPose(&pose);
+    if (!dobot_m1_interface::CheckCommunication)
+    {
+      ROS_ERROR("Could not get absolute hand position");
+      return false;
+    }
+    abs_x += (float)pose.x;
+    abs_y += (float)pose.y;
+    abs_z += (float)pose.z;
+  }
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z, is_lefthand))
   {
     ROS_ERROR("Given Postion is out of software limit");
     return false;
