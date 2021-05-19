@@ -62,8 +62,7 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
   float abs_x = (float)pose.x;
   float abs_y = (float)pose.y;
   float abs_z = (float)pose.z;
-  ROS_INFO("[x: %.2f, y: %.2f, z: %.2f]", abs_x, abs_y, abs_z);
-  if(!m1_software_limit::isValid(abs_x, abs_y, abs_z))
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
   {
     ROS_ERROR("The given point is invalid");
   }
@@ -75,15 +74,32 @@ void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_l
   float abs_x = x;
   float abs_y = y;
   float abs_z = z;
-  if (mode > 3)
+  switch (mode)
   {
-    // only check for absolute coodination
-    dobot_api::Pose pose;
-    uint8_t status = dobot_api::GetPose(&pose);
-    dobot_m1_interface::CheckCommunicationWithException("GetPose", status);
-    abs_x += (float)pose.x;
-    abs_y += (float)pose.y;
-    abs_z += (float)pose.z;
+    case dobot_api::PTPMode::PTPJUMPXYZMode:
+    case dobot_api::PTPMode::PTPMOVJXYZMode:
+    case dobot_api::PTPMode::PTPMOVLXYZMode:
+      break;
+    case dobot_api::PTPMode::PTPJUMPANGLEMode:
+    case dobot_api::PTPMode::PTPMOVJANGLEMode:
+    case dobot_api::PTPMode::PTPMOVLANGLEMode:
+    case dobot_api::PTPMode::PTPMOVJANGLEINCMode:
+      throw std::runtime_error("The software limit for this mode is not implemented yet");
+    case dobot_api::PTPMode::PTPMOVLXYZINCMode:
+    case dobot_api::PTPMode::PTPMOVJXYZINCMode:
+    case dobot_api::PTPMode::PTPJUMPMOVLXYZMode:
+    {
+      // only check for absolute coodination
+      dobot_api::Pose pose;
+      uint8_t status = dobot_api::GetPose(&pose);
+      dobot_m1_interface::CheckCommunicationWithException("GetPose", status);
+      abs_x += (float)pose.x;
+      abs_y += (float)pose.y;
+      abs_z += (float)pose.z;
+    }
+    break;
+    default:
+      throw std::runtime_error("Unsupported ptpMode");
   }
   if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
   {
@@ -106,18 +122,38 @@ bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r, bool i
   float abs_x = x;
   float abs_y = y;
   float abs_z = z;
-  if (mode > 3)
+  switch (mode)
   {
-    dobot_api::Pose pose;
-    uint8_t status = dobot_api::GetPose(&pose);
-    if (!dobot_m1_interface::CheckCommunication)
-    {
-      ROS_ERROR("Could not get absolute hand position");
+    case dobot_api::PTPMode::PTPJUMPXYZMode:
+    case dobot_api::PTPMode::PTPMOVJXYZMode:
+    case dobot_api::PTPMode::PTPMOVLXYZMode:
+      break;
+    case dobot_api::PTPMode::PTPJUMPANGLEMode:
+    case dobot_api::PTPMode::PTPMOVJANGLEMode:
+    case dobot_api::PTPMode::PTPMOVLANGLEMode:
+    case dobot_api::PTPMode::PTPMOVJANGLEINCMode:
+      ROS_ERROR("The software limit for this mode is not implemented yet");
       return false;
+    case dobot_api::PTPMode::PTPMOVLXYZINCMode:
+    case dobot_api::PTPMode::PTPMOVJXYZINCMode:
+    case dobot_api::PTPMode::PTPJUMPMOVLXYZMode:
+    {
+      // only check for absolute coodination
+      dobot_api::Pose pose;
+      uint8_t status = dobot_api::GetPose(&pose);
+      if (!dobot_m1_interface::CheckCommunication(status))
+      {
+        ROS_ERROR("failed to get the absolute position");
+        return false;
+      }
+      abs_x += (float)pose.x;
+      abs_y += (float)pose.y;
+      abs_z += (float)pose.z;
     }
-    abs_x += (float)pose.x;
-    abs_y += (float)pose.y;
-    abs_z += (float)pose.z;
+    break;
+    default:
+      ROS_ERROR("Unsupported ptpMode");
+      return false;
   }
   if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
   {
@@ -183,6 +219,49 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
   uint64_t last_index;
   std::string str;
 
+  // Check Softare Limit
+  float abs_x = cmd.x;
+  float abs_y = cmd.y;
+  float abs_z = cmd.z;
+  switch (cmd.ptpMode)
+  {
+    case dobot_api::PTPMode::PTPJUMPXYZMode:
+    case dobot_api::PTPMode::PTPMOVJXYZMode:
+    case dobot_api::PTPMode::PTPMOVLXYZMode:
+      break;
+    case dobot_api::PTPMode::PTPJUMPANGLEMode:
+    case dobot_api::PTPMode::PTPMOVJANGLEMode:
+    case dobot_api::PTPMode::PTPMOVLANGLEMode:
+    case dobot_api::PTPMode::PTPMOVJANGLEINCMode:
+      ROS_ERROR("The software limit for this mode is not implemented yet");
+      return false;
+    case dobot_api::PTPMode::PTPMOVLXYZINCMode:
+    case dobot_api::PTPMode::PTPMOVJXYZINCMode:
+    case dobot_api::PTPMode::PTPJUMPMOVLXYZMode:
+    {
+      // only check for absolute coodination
+      dobot_api::Pose pose;
+      uint8_t status = dobot_api::GetPose(&pose);
+      if (!dobot_m1_interface::CheckCommunication(status))
+      {
+        ROS_ERROR("failed to get the absolute position");
+        return false;
+      };
+      abs_x += (float)pose.x;
+      abs_y += (float)pose.y;
+      abs_z += (float)pose.z;
+    }
+    break;
+    default:
+      ROS_ERROR("Unsupported ptpMode");
+      return false;
+  }
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
+  {
+    ROS_ERROR("Given Postion is out of software limit");
+    return false;
+  }
+
   // Start session with dobot
   dobot_api::ArmOrientation arm_orientation;
   if (req.m1_ptp_cmd.is_lefthand)
@@ -233,6 +312,33 @@ bool DobotM1::PtpCmdServiceCallback_(m1_msgs::M1PtpCmdServiceRequest &req, m1_ms
 
 void DobotM1::CpCmd(uint8_t mode, float x, float y, float z)
 {
+  // Check Softare Limit
+  float abs_x = x;
+  float abs_y = y;
+  float abs_z = z;
+  switch (mode)
+  {
+    case dobot_api::CPMode::CPRelativeMode:
+    {
+      // only check for absolute coodination
+      dobot_api::Pose pose;
+      uint8_t status = dobot_api::GetPose(&pose);
+      dobot_m1_interface::CheckCommunicationWithException("GetPose", status);
+      abs_x += (float)pose.x;
+      abs_y += (float)pose.y;
+      abs_z += (float)pose.z;
+    }
+    break;
+    case dobot_api::CPMode::CPAbsoluteMode:
+      break;
+    default:
+      throw std::runtime_error("invalid cpMode given");
+  }
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
+  {
+    throw std::runtime_error("given position is out of software limit [x: %.2f, y: %.2f, z: %.2f]");
+  }
+
   dobot_m1_interface::SetArmOrientationRight();
   dobot_m1_interface::SetCpCmd(mode, x, y, z);
   DobotM1::CheckAlarm_();
@@ -240,6 +346,38 @@ void DobotM1::CpCmd(uint8_t mode, float x, float y, float z)
 
 bool DobotM1::TryCpCmd(uint8_t mode, float x, float y, float z)
 {
+  // Check Softare Limit
+  float abs_x = x;
+  float abs_y = y;
+  float abs_z = z;
+  switch (mode)
+  {
+    case dobot_api::CPMode::CPRelativeMode:
+    {
+      // only check for absolute coodination
+      dobot_api::Pose pose;
+      uint8_t status = dobot_api::GetPose(&pose);
+      if (!dobot_m1_interface::CheckCommunication(status))
+      {
+        ROS_ERROR("failed to get the absolute position");
+        return false;
+      }
+      abs_x += (float)pose.x;
+      abs_y += (float)pose.y;
+      abs_z += (float)pose.z;
+    }
+    break;
+    case dobot_api::CPMode::CPAbsoluteMode:
+      break;
+    default:
+      ROS_ERROR("invalid cpmode given");
+      return false;
+  }
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
+  {
+    ROS_ERROR("Given Postion is out of software limit");
+    return false;
+  }
   if (!dobot_m1_interface::TrySetArmOrientationRight())
   {
     ROS_ERROR("FAILED TO SET ARM ORIENTATION");
@@ -292,6 +430,38 @@ bool DobotM1::CpCmdServiceCallback_(m1_msgs::M1CpCmdServiceRequest &req, m1_msgs
   uint64_t last_index;
   std::string str;
 
+  // Check Softare Limit
+  float abs_x = cmd.x;
+  float abs_y = cmd.y;
+  float abs_z = cmd.z;
+  switch (cmd.cpMode)
+  {
+    case dobot_api::CPMode::CPRelativeMode:
+    {
+      // only check for absolute coodination
+      dobot_api::Pose pose;
+      uint8_t status = dobot_api::GetPose(&pose);
+      if (!dobot_m1_interface::CheckCommunication(status))
+      {
+        ROS_ERROR("failed to get the absolute position");
+        return false;
+      }
+      abs_x += (float)pose.x;
+      abs_y += (float)pose.y;
+      abs_z += (float)pose.z;
+    }
+    break;
+    case dobot_api::CPMode::CPAbsoluteMode:
+      break;
+    default:
+      ROS_ERROR("invalid cpmode given");
+      return false;
+  }
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
+  {
+    ROS_ERROR("Given Postion is out of software limit");
+    return false;
+  }
   // Cp command only works on RightyArmOrientation
   // Set Arm Orientation
   status = dobot_api::SetArmOrientation(dobot_api::RightyArmOrientation, true, nullptr);
