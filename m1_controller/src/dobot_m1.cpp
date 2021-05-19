@@ -9,7 +9,7 @@ DobotM1::DobotM1() : nh_(), pnh_("~")
 
   InitDobot();
 
-  DobotM1::joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 10);
+  DobotM1::joint_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_state", 1);
   DobotM1::timer_ = nh_.createTimer(ros::Duration(1), &DobotM1::TimerCallback_, this);
   DobotM1::ptp_cmd_sub_ = nh_.subscribe("ptp_cmd", 1, &DobotM1::PtpCmdCallback_, this);
   DobotM1::ptp_param_sub_ = nh_.subscribe("ptp_param", 1, &DobotM1::PtpParamsCallback_, this);
@@ -58,6 +58,15 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
   joint_msg.name[3] = "joint4";
   joint_msg.position[3] = (float)pose.jointAngle[3];
   joint_pub_.publish(joint_msg);
+
+  float abs_x = (float)pose.x;
+  float abs_y = (float)pose.y;
+  float abs_z = (float)pose.z;
+  ROS_INFO("[x: %.2f, y: %.2f, z: %.2f]", abs_x, abs_y, abs_z);
+  if(!m1_software_limit::isValid(abs_x, abs_y, abs_z))
+  {
+    ROS_ERROR("The given point is invalid");
+  }
 }
 
 void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_lefthand)
@@ -76,7 +85,7 @@ void DobotM1::PtpCmd(uint8_t mode, float x, float y, float z, float r, bool is_l
     abs_y += (float)pose.y;
     abs_z += (float)pose.z;
   }
-  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z, is_lefthand))
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
   {
     throw std::runtime_error("given position is out of software limit [x: %.2f, y: %.2f, z: %.2f]");
   }
@@ -110,7 +119,7 @@ bool DobotM1::TryPtpCmd(uint8_t mode, float x, float y, float z, float r, bool i
     abs_y += (float)pose.y;
     abs_z += (float)pose.z;
   }
-  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z, is_lefthand))
+  if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
   {
     ROS_ERROR("Given Postion is out of software limit");
     return false;
