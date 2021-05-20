@@ -11,7 +11,12 @@ bool isValid(float abs_x, float abs_y, float abs_z)
   }
 
   // limit for xv1 wheel
-  if (abs_z < 74.0)
+  if (abs_z < 74.0 && abs_x < 280.0 && abs_y < -180.0)
+  {
+    return false;
+  }
+  // limit for body
+  if (abs_z < 60.0 && abs_x < 280.0)
   {
     return false;
   }

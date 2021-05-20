@@ -62,6 +62,7 @@ void DobotM1::TimerCallback_(const ros::TimerEvent &)
   float abs_x = (float)pose.x;
   float abs_y = (float)pose.y;
   float abs_z = (float)pose.z;
+  ROS_INFO("[x: %.2f, y: %.2f, z: %.2f]", abs_x, abs_y, abs_z);
   if (!m1_software_limit::isValid(abs_x, abs_y, abs_z))
   {
     ROS_ERROR("The given point is invalid");
